@@ -1,0 +1,119 @@
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  padding: 20px;
+  margin: 0;
+  background: url('dammi70euro.png') no-repeat center center fixed;
+  background-size: cover;
+  color: #ffffff;
+  position: relative;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: gold;
+  font-size: 2em;
+  position: relative;
+  z-index: 10;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 600px;
+  position: relative;
+  z-index: 10;
+  max-height: 400px; 
+  overflow-y: auto;
+  scrollbar-width: thin; 
+  scrollbar-color: #00b0ff #1d1d1d;
+}
+
+ul::-webkit-scrollbar {
+  width: 8px;
+}
+ul::-webkit-scrollbar-track {
+  background: #1d1d1d;
+  border-radius: 4px;
+}
+ul::-webkit-scrollbar-thumb {
+  background: #00b0ff;
+  border-radius: 4px;
+}
+ul::-webkit-scrollbar-thumb:hover {
+  background: #0091cc;
+}
+
+li {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(29,29,29,0.8);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.song-title {
+  display: inline-block;
+  font-size: 1rem;
+  margin-right: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 70%;
+}
+
+.play-button {
+  padding: 6px 12px;
+  background: #00b0ff;
+  color: #ffffff;
+  border-radius: 3px;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 0.9em;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.play-button:hover {
+  background: #0091cc;
+}
+
+.playing {
+  font-weight: bold;
+  color: #00b0ff;
+}
+
+audio {
+  display: block;
+  margin: 40px auto 0 auto;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  z-index: 10;
+}
+
+.big-button {
+  display: block;
+  margin: 30px auto;
+  width: 200px;
+  height: 60px;
+  background: #ff5722;
+  color: #ffffff;
+  font-size: 1.2em;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  line-height: 60px;
+  text-decoration: none;
+  position: relative;
+  z-index: 10;
+}
+
+.big-button:hover {
+  background: #e64a19;
+}
