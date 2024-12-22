@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Seconda Pagina - Drum Machine Avanzata</title>
+  <title>Seconda Pagina - Drum Machine</title>
   <style>
     body {
       margin: 0;
@@ -11,50 +11,62 @@
       background: #121212; 
       color: #ffffff;
       font-family: "Helvetica Neue", Arial, sans-serif;
-      overflow: hidden; 
-      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       height: 100vh;
-      width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .random-image {
+      position: absolute;
+      opacity: 0.8;
     }
 
     .content {
       position: relative;
       z-index: 100;
-      text-align: center;
-      top: 50%;
-      transform: translateY(-50%);
-      margin: 0 auto;
+      width: 100%;
       max-width: 800px;
+      text-align: center;
     }
     
-    /* Immagini sullo sfondo */
-    .random-image {
-      position: absolute;
-      opacity: 1;
-    }
-
     h1, h2 {
       color: gold;
-      margin: 10px;
+      margin: 10px 0;
     }
 
     .controls {
-      margin: 20px 0;
+      margin: 15px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tempo-slider {
+      flex: 1;
+      margin-right: 10px;
     }
 
     .tempo-label {
-      display: inline-block;
-      margin-right: 10px;
       font-weight: bold;
+      margin-right: 5px;
     }
+
     .tempo-value {
-      margin-left: 5px;
       color: #00b0ff;
       font-weight: bold;
     }
 
-    .steps-buttons > button {
-      margin: 0 5px;
+    .steps-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .steps-buttons button {
       background: #00b0ff;
       color: #fff;
       font-size: 0.9em;
@@ -64,33 +76,72 @@
       cursor: pointer;
       padding: 8px 15px;
     }
-    .steps-buttons > button:hover {
+
+    .steps-buttons button:hover {
       background: #0091cc;
     }
 
-    /* Contenitore Drum Machine */
     .drum-machine {
-      display: inline-block;
-      text-align: left;
+      margin: 20px 0;
       background: #1d1d1d;
       padding: 20px;
       border-radius: 8px;
-      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
-    }
-    th, td {
-      padding: 5px 10px;
-      text-align: center;
-    }
-    .active-step {
-      background: #00b0ff !important;
+    .instrument-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
 
-    /* Pulsanti Play/Stop */
+    .instrument-label {
+      text-align: left;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .step-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .step-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .step-number {
+      font-size: 0.8em;
+      color: #aaa;
+    }
+
+    .step {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #555;
+      border-radius: 50%;
+      background: #222;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .step.active {
+      background: #00b0ff;
+    }
+
+    .step.current {
+      box-shadow: 0 0 10px 4px #ff5722;
+    }
+
     .play-button, .stop-button {
       display: inline-block;
       margin: 10px;
@@ -102,75 +153,76 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     .play-button {
       background: #ff5722;
     }
     .play-button:hover {
       background: #e64a19;
     }
+
     .stop-button {
       background: #9c27b0;
     }
     .stop-button:hover {
       background: #7b1fa2;
     }
-
-    /* Bottone per tornare indietro */
-    .back-button {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #00b0ff;
-      color: #fff;
-      font-size: 1em;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-      margin-left: 10px;
-    }
-    .back-button:hover {
-      background: #0091cc;
-    }
-
   </style>
 </head>
 <body>
 
+<!-- IMMAGINI RANDOM SFONDO -->
+<script>
+  const NUM_IMAGES = 100;
+  const imgSrc = 'dammi70euro.png';
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  for (let i = 0; i < NUM_IMAGES; i++) {
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.classList.add('random-image');
+    const x = Math.random() * screenWidth;
+    const y = Math.random() * screenHeight;
+    const size = 80 + Math.random() * 50;
+    img.style.width = size + 'px';
+    img.style.height = 'auto';
+    img.style.left = x + 'px';
+    img.style.top = y + 'px';
+    img.style.position = 'absolute';
+    document.body.appendChild(img);
+  }
+</script>
+
 <div class="content">
-  <h1>Seconda Pagina</h1>
-  <h2>Easter Egg: Drum Machine Avanzata</h2>
+  <h1>Drum Machine</h1>
+  <h2>Compact Design</h2>
 
   <!-- Controlli: slider tempo e pulsanti step -->
   <div class="controls">
-    <label class="tempo-label" for="tempoSlider">Tempo (BPM):</label>
-    <input type="range" id="tempoSlider" min="30" max="300" value="120" step="1">
+    <label class="tempo-label">Tempo:</label>
+    <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
     <span class="tempo-value" id="tempoValue">120</span>
-
     <div class="steps-buttons">
-      <span style="margin-right:5px;">Steps:</span>
-      <button data-step="16">16</button>
-      <button data-step="32">32</button>
-      <button data-step="64">64</button>
+      <button data-steps="16">16</button>
+      <button data-steps="32">32</button>
+      <button data-steps="64">64</button>
     </div>
   </div>
 
-  <!-- Drum Machine (tabella generata via JS) -->
+  <!-- Drum Machine -->
   <div class="drum-machine" id="drumMachine"></div>
 
-  <!-- Pulsanti Play / Stop e Ritorno -->
+  <!-- Pulsanti Play / Stop -->
   <button class="play-button" id="playBtn">Play</button>
   <button class="stop-button" id="stopBtn">Stop</button>
-  <a href="index.html" class="back-button">Torna indietro</a>
 </div>
 
-<!-- AUDIO TAGS PER I SUONI (nessun fetch) -->
+<!-- AUDIO -->
 <audio id="kickAudio" src="drums/kick.wav" preload="auto"></audio>
 <audio id="snareAudio" src="drums/snare.wav" preload="auto"></audio>
 <audio id="hihatAudio" src="drums/hihat.wav" preload="auto"></audio>
 
-<!-- Linkiamo il file JS separato -->
 <script src="drummachine.js"></script>
 
 </body>
