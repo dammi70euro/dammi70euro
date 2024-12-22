@@ -216,3 +216,50 @@ instruments.forEach((instrument) => {
   patterns[instrument.toLowerCase()] = Array(numSteps).fill(false);
 });
 buildDrumMachine();
+
+const vinylDiv = document.querySelector('.vinyl');
+
+// Configurazione per i BPM
+const minBPM = 30; // BPM minimo
+const maxBPM = 300; // BPM massimo
+const maxDuration = 5; // Durata massima per un giro (in secondi)
+const minDuration = 0.25; // Durata minima per un giro (in secondi)
+
+// Aggiorna la velocità di rotazione del vinile
+function updateVinylSpeed() {
+  const spinDuration =
+    maxDuration - ((tempo - minBPM) / (maxBPM - minBPM)) * (maxDuration - minDuration);
+  vinylDiv.style.setProperty('--spin-duration', `${spinDuration}s`);
+}
+
+// Gestisci play e stop per il vinile
+function startSequencer() {
+  if (!isPlaying) {
+    isPlaying = true;
+    vinylDiv.classList.add('playing'); // Inizia la rotazione del vinile
+    updateVinylSpeed(); // Aggiorna velocità del vinile
+    const stepDuration = (60 / tempo) / 4;
+    intervalId = setInterval(handleStep, stepDuration * 1000);
+  }
+}
+
+function stopSequencer() {
+  if (isPlaying) {
+    isPlaying = false;
+    vinylDiv.classList.remove('playing'); // Ferma la rotazione del vinile
+    clearInterval(intervalId);
+    steps.forEach((step) => step.classList.remove('current'));
+  }
+}
+
+// Modifica il BPM e aggiorna la velocità del vinile
+tempoSlider.addEventListener('input', () => {
+  tempo = parseInt(tempoSlider.value);
+  tempoValue.textContent = `${tempo} BPM`;
+  updateVinylSpeed(); // Aggiorna velocità del vinile
+  if (isPlaying) {
+    clearInterval(intervalId);
+    const stepDuration = (60 / tempo) / 4;
+    intervalId = setInterval(handleStep, stepDuration * 1000);
+  }
+});
