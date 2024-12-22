@@ -13,34 +13,15 @@ let currentStep = 0;
 let steps = [];
 const patterns = {};
 
-const instruments = ['Kick', 'Snare', 'hihat'];
+const instruments = ['Kick', 'Snare', 'HiHat'];
 
-// Genera pattern per Kick
-function generateKickPattern(numSteps) {
+// Funzione per generare un pattern casuale basato su percentuale di riempimento
+function generateRandomPattern(numSteps, fillPercentage) {
   const pattern = Array(numSteps).fill(false);
-  for (let i = 0; i < numSteps; i += 4) {
-    pattern[i] = true; // Battiti forti (1° e 3°)
-    if (i + 2 < numSteps) pattern[i + 2] = Math.random() > 0.7; // Aggiunge variazione
-  }
-  return pattern;
-}
-
-// Genera pattern per Snare
-function generateSnarePattern(numSteps) {
-  const pattern = Array(numSteps).fill(false);
-  for (let i = 2; i < numSteps; i += 4) {
-    pattern[i] = true; // Battiti deboli (2° e 4°)
-    if (i + 1 < numSteps) pattern[i + 1] = Math.random() > 0.8; // Ghost notes
-  }
-  return pattern;
-}
-
-// Genera pattern per Hi-Hat
-function generateHiHatPattern(numSteps) {
-  const pattern = Array(numSteps).fill(false);
-  for (let i = 0; i < numSteps; i += 2) {
-    pattern[i] = true; // Ritmo regolare
-    if (Math.random() > 0.5 && i + 1 < numSteps) pattern[i + 1] = true; // Swing o sincopato
+  for (let i = 0; i < numSteps; i++) {
+    if (Math.random() < fillPercentage / 100) {
+      pattern[i] = true; // Riempie in base alla percentuale
+    }
   }
   return pattern;
 }
@@ -85,12 +66,42 @@ function buildDrumMachine() {
     label.className = 'instrument-label';
     label.textContent = instrument;
 
+    // Pulsante di generazione casuale
     const patternButton = document.createElement('button');
     patternButton.className = 'pattern-button';
     patternButton.textContent = '🎲';
-    patternButton.title = 'Genera pattern';
-    patternButton.addEventListener('click', () => applyPattern(instrument.toLowerCase()));
+    patternButton.title = 'Genera pattern casuale';
+    patternButton.addEventListener('click', () => {
+      const slider = document.querySelector(`#${instrument.toLowerCase()}Slider`);
+      const fillPercentage = parseInt(slider.value);
+      patterns[instrument.toLowerCase()] = generateRandomPattern(numSteps, fillPercentage);
+      buildDrumMachine();
+    });
 
+    // Slider per la percentuale di riempimento
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = 'slider-container';
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = 0;
+    slider.max = 100;
+    slider.value = 50;
+    slider.className = 'fill-slider';
+    slider.id = `${instrument.toLowerCase()}Slider`;
+
+    const sliderLabel = document.createElement('span');
+    sliderLabel.className = 'slider-label';
+    sliderLabel.textContent = '50%';
+
+    slider.addEventListener('input', () => {
+      sliderLabel.textContent = `${slider.value}%`;
+    });
+
+    sliderContainer.appendChild(slider);
+    sliderContainer.appendChild(sliderLabel);
+
+    // Pulsante per cancellare il pattern
     const clearButton = document.createElement('button');
     clearButton.className = 'pattern-button';
     clearButton.textContent = '❌';
@@ -99,6 +110,7 @@ function buildDrumMachine() {
 
     header.appendChild(label);
     header.appendChild(patternButton);
+    header.appendChild(sliderContainer);
     header.appendChild(clearButton);
     row.appendChild(header);
 
@@ -134,24 +146,6 @@ function buildDrumMachine() {
     row.appendChild(stepGroup);
     drumMachineDiv.appendChild(row);
   });
-}
-
-// Applica un pattern generato
-function applyPattern(instrument) {
-  switch (instrument) {
-    case 'kick':
-      patterns[instrument] = generateKickPattern(numSteps);
-      break;
-    case 'snare':
-      patterns[instrument] = generateSnarePattern(numSteps);
-      break;
-    case 'hi-hat':
-      patterns[instrument] = generateHiHatPattern(numSteps);
-      break;
-    default:
-      break;
-  }
-  buildDrumMachine();
 }
 
 // Riproduzione
@@ -219,6 +213,6 @@ stopBtn.addEventListener('click', stopSequencer);
 
 // Inizializzazione
 instruments.forEach((instrument) => {
-  patterns[instrument.toLowerCase()] = generateKickPattern(numSteps);
+  patterns[instrument.toLowerCase()] = Array(numSteps).fill(false);
 });
 buildDrumMachine();
