@@ -11,28 +11,62 @@ let isPlaying = false;
 let intervalId = null;
 let currentStep = 0;
 let steps = [];
-const instruments = ['Kick', 'Snare', 'Hi-Hat'];
 const patterns = {};
 
-// Funzioni di generazione ritmica
-function generatePattern(instrument) {
+const instruments = ['Kick', 'Snare', 'hihat'];
+
+// Genera pattern per Kick
+function generateKickPattern(numSteps) {
   const pattern = Array(numSteps).fill(false);
-
-  if (instrument === 'kick') {
-    for (let i = 0; i < numSteps; i += 4) {
-      pattern[i] = true;
-    }
-  } else if (instrument === 'snare') {
-    for (let i = 2; i < numSteps; i += 4) {
-      pattern[i] = true;
-    }
-  } else if (instrument === 'hihat') {
-    for (let i = 0; i < numSteps; i += 2) {
-      pattern[i] = Math.random() > 0.3; // Sincopato casuale
-    }
+  for (let i = 0; i < numSteps; i += 4) {
+    pattern[i] = true; // Battiti forti (1° e 3°)
+    if (i + 2 < numSteps) pattern[i + 2] = Math.random() > 0.7; // Aggiunge variazione
   }
-
   return pattern;
+}
+
+// Genera pattern per Snare
+function generateSnarePattern(numSteps) {
+  const pattern = Array(numSteps).fill(false);
+  for (let i = 2; i < numSteps; i += 4) {
+    pattern[i] = true; // Battiti deboli (2° e 4°)
+    if (i + 1 < numSteps) pattern[i + 1] = Math.random() > 0.8; // Ghost notes
+  }
+  return pattern;
+}
+
+// Genera pattern per Hi-Hat
+function generateHiHatPattern(numSteps) {
+  const pattern = Array(numSteps).fill(false);
+  for (let i = 0; i < numSteps; i += 2) {
+    pattern[i] = true; // Ritmo regolare
+    if (Math.random() > 0.5 && i + 1 < numSteps) pattern[i + 1] = true; // Swing o sincopato
+  }
+  return pattern;
+}
+
+// Cancella tutti gli step per uno strumento
+function clearPattern(instrument) {
+  patterns[instrument] = Array(numSteps).fill(false);
+  buildDrumMachine();
+}
+
+// Mantiene i valori degli step
+function adjustSteps(newSteps) {
+  instruments.forEach((instrument) => {
+    const oldPattern = patterns[instrument.toLowerCase()] || [];
+    const newPattern = [];
+
+    for (let i = 0; i < newSteps; i++) {
+      if (i < oldPattern.length) {
+        newPattern[i] = oldPattern[i];
+      } else {
+        newPattern[i] = oldPattern[i % oldPattern.length];
+      }
+    }
+
+    patterns[instrument.toLowerCase()] = newPattern;
+  });
 }
 
 // Costruisce la drum machine
@@ -53,11 +87,19 @@ function buildDrumMachine() {
 
     const patternButton = document.createElement('button');
     patternButton.className = 'pattern-button';
-    patternButton.textContent = 'Genera';
-    patternButton.addEventListener('click', () => applyPattern(instrument));
+    patternButton.textContent = '🎲';
+    patternButton.title = 'Genera pattern';
+    patternButton.addEventListener('click', () => applyPattern(instrument.toLowerCase()));
+
+    const clearButton = document.createElement('button');
+    clearButton.className = 'pattern-button';
+    clearButton.textContent = '❌';
+    clearButton.title = 'Cancella pattern';
+    clearButton.addEventListener('click', () => clearPattern(instrument.toLowerCase()));
 
     header.appendChild(label);
     header.appendChild(patternButton);
+    header.appendChild(clearButton);
     row.appendChild(header);
 
     const stepGroup = document.createElement('div');
@@ -96,26 +138,20 @@ function buildDrumMachine() {
 
 // Applica un pattern generato
 function applyPattern(instrument) {
-  patterns[instrument.toLowerCase()] = generatePattern(instrument.toLowerCase());
+  switch (instrument) {
+    case 'kick':
+      patterns[instrument] = generateKickPattern(numSteps);
+      break;
+    case 'snare':
+      patterns[instrument] = generateSnarePattern(numSteps);
+      break;
+    case 'hi-hat':
+      patterns[instrument] = generateHiHatPattern(numSteps);
+      break;
+    default:
+      break;
+  }
   buildDrumMachine();
-}
-
-// Mantieni i valori degli step
-function adjustSteps(newSteps) {
-  instruments.forEach((instrument) => {
-    const oldPattern = patterns[instrument.toLowerCase()] || [];
-    const newPattern = [];
-
-    for (let i = 0; i < newSteps; i++) {
-      if (i < oldPattern.length) {
-        newPattern[i] = oldPattern[i];
-      } else {
-        newPattern[i] = oldPattern[i % oldPattern.length];
-      }
-    }
-
-    patterns[instrument.toLowerCase()] = newPattern;
-  });
 }
 
 // Riproduzione
@@ -183,6 +219,6 @@ stopBtn.addEventListener('click', stopSequencer);
 
 // Inizializzazione
 instruments.forEach((instrument) => {
-  patterns[instrument.toLowerCase()] = generatePattern(instrument.toLowerCase());
+  patterns[instrument.toLowerCase()] = generateKickPattern(numSteps);
 });
 buildDrumMachine();
