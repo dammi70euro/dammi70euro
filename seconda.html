@@ -237,6 +237,32 @@
     .stop-button:hover {
       background: #7b1fa2;
     }
+	
+	 .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 10px 15px;
+      color: #fff;
+      background-color: var(--button-color, #00b0ff);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-button:hover {
+      opacity: 0.8;
+    }
+
+    .back-button .emoji {
+      font-size: 1.2em;
+    }
 
     /* Mobile View */
     @media (max-width: 768px) {
@@ -260,6 +286,18 @@
 
 <!-- Sfondo con immagini random -->
 <script>
+
+	
+  // Funzione per generare colori casuali
+  function randomColor() {
+    return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+  }
+
+  // Imposta un colore casuale per il pulsante Back
+  document.documentElement.style.setProperty('--button-color', randomColor());
+
+
+
   const NUM_IMAGES = 100;
   const imgSrc = 'dammi70euro.png';
   const screenWidth = window.innerWidth;
@@ -301,6 +339,8 @@
   <img src="dammi70euro.png" alt="Vinyl" class="vinyl-image" />
 </div>
 
+
+
 <!-- Contenuto -->
 <div class="content">
   <h1>Drum Machine Generativa</h1>
@@ -322,7 +362,19 @@
 
   <!-- Drum Machine -->
   <div class="drum-machine" id="drumMachine"></div>
+	
 
+
+  
+  
+  <!-- Pulsante Back -->
+<button class="back-button" onclick="window.location.href='index.html'">
+  <span class="emoji">🛏️</span>
+  Vai a Letto
+</button>
+  
+  
+  
   <!-- Pulsanti Play / Stop -->
   <button class="play-button" id="playBtn">Play</button>
   <button class="stop-button" id="stopBtn">Stop</button>
