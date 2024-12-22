@@ -52,6 +52,15 @@ function adjustSteps(newSteps) {
 
 // Costruisce la drum machine
 function buildDrumMachine() {
+  // Salva i valori degli slider esistenti
+  const sliderValues = {};
+  instruments.forEach((instrument) => {
+    const slider = document.querySelector(`#${instrument.toLowerCase()}Slider`);
+    if (slider) {
+      sliderValues[instrument] = slider.value; // Salva il valore dello slider
+    }
+  });
+
   drumMachineDiv.innerHTML = '';
   steps = [];
 
@@ -75,7 +84,7 @@ function buildDrumMachine() {
       const slider = document.querySelector(`#${instrument.toLowerCase()}Slider`);
       const fillPercentage = parseInt(slider.value);
       patterns[instrument.toLowerCase()] = generateRandomPattern(numSteps, fillPercentage);
-      buildDrumMachine();
+      buildDrumMachine(); // Ricostruisce l'interfaccia mantenendo i valori
     });
 
     // Slider per la percentuale di riempimento
@@ -86,13 +95,13 @@ function buildDrumMachine() {
     slider.type = 'range';
     slider.min = 0;
     slider.max = 100;
-    slider.value = 50;
+    slider.value = sliderValues[instrument] || 50; // Ripristina il valore salvato
     slider.className = 'fill-slider';
     slider.id = `${instrument.toLowerCase()}Slider`;
 
     const sliderLabel = document.createElement('span');
     sliderLabel.className = 'slider-label';
-    sliderLabel.textContent = '50%';
+    sliderLabel.textContent = `${slider.value}%`;
 
     slider.addEventListener('input', () => {
       sliderLabel.textContent = `${slider.value}%`;
