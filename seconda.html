@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Seconda Pagina con Drum Machine</title>
+  <title>Seconda Pagina - Drum Machine Avanzata</title>
   <style>
     body {
       margin: 0;
@@ -23,6 +23,8 @@
       text-align: center;
       top: 50%;
       transform: translateY(-50%);
+      margin: 0 auto;
+      max-width: 800px;
     }
     
     /* Immagini sullo sfondo */
@@ -31,42 +33,68 @@
       opacity: 1;
     }
 
+    h1, h2 {
+      color: gold;
+      margin: 10px;
+    }
+
+    .controls {
+      margin: 20px 0;
+    }
+
+    .tempo-label {
+      display: inline-block;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .tempo-value {
+      margin-left: 5px;
+      color: #00b0ff;
+      font-weight: bold;
+    }
+
+    .steps-buttons > button {
+      margin: 0 5px;
+      background: #00b0ff;
+      color: #fff;
+      font-size: 0.9em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 8px 15px;
+    }
+    .steps-buttons > button:hover {
+      background: #0091cc;
+    }
+
     /* Contenitore Drum Machine */
     .drum-machine {
-      margin: 20px auto;
       display: inline-block;
       text-align: left;
       background: #1d1d1d;
       padding: 20px;
       border-radius: 8px;
-    }
-
-    h1, h2 {
-      color: gold;
-      margin: 10px 0;
+      margin: 20px 0;
     }
 
     table {
       border-collapse: collapse;
       margin: 0 auto;
     }
-
     th, td {
       padding: 5px 10px;
       text-align: center;
     }
-
-    /* Step attivo */
     .active-step {
       background: #00b0ff !important;
     }
 
-    /* Bottone Play/Stop */
-    .play-button {
+    /* Pulsanti Play/Stop */
+    .play-button, .stop-button {
       display: inline-block;
-      margin-top: 15px;
+      margin: 10px;
       padding: 10px 20px;
-      background: #ff5722;
       color: #fff;
       font-size: 1em;
       font-weight: bold;
@@ -74,8 +102,17 @@
       border-radius: 6px;
       cursor: pointer;
     }
+    .play-button {
+      background: #ff5722;
+    }
     .play-button:hover {
       background: #e64a19;
+    }
+    .stop-button {
+      background: #9c27b0;
+    }
+    .stop-button:hover {
+      background: #7b1fa2;
     }
 
     /* Bottone per tornare indietro */
@@ -90,81 +127,42 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin-left: 15px;
       text-decoration: none;
-      text-align: center;
+      margin-left: 10px;
     }
     .back-button:hover {
       background: #0091cc;
     }
+
   </style>
 </head>
 <body>
 
-<!-- CONTENUTO: DRUM MACHINE + TITOLO -->
 <div class="content">
   <h1>Seconda Pagina</h1>
-  <h2>Easter Egg: Drum Machine!</h2>
-  
-  <!-- Sezione Drum Machine -->
-  <div class="drum-machine">
-    <table>
-      <thead>
-        <tr>
-          <th>Strumento</th>
-          <!-- 8 step -->
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
-          <th>6</th>
-          <th>7</th>
-          <th>8</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Kick row -->
-        <tr>
-          <td>Kick</td>
-          <td><input type="checkbox" data-sound="kick" data-step="0"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="1"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="2"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="3"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="4"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="5"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="6"></td>
-          <td><input type="checkbox" data-sound="kick" data-step="7"></td>
-        </tr>
-        <!-- Snare row -->
-        <tr>
-          <td>Snare</td>
-          <td><input type="checkbox" data-sound="snare" data-step="0"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="1"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="2"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="3"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="4"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="5"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="6"></td>
-          <td><input type="checkbox" data-sound="snare" data-step="7"></td>
-        </tr>
-        <!-- Hi-Hat row -->
-        <tr>
-          <td>Hi-Hat</td>
-          <td><input type="checkbox" data-sound="hihat" data-step="0"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="1"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="2"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="3"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="4"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="5"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="6"></td>
-          <td><input type="checkbox" data-sound="hihat" data-step="7"></td>
-        </tr>
-      </tbody>
-    </table>
-    <button id="playBtn" class="play-button">Play</button>
-    <a href="index.html" class="back-button">Torna indietro</a>
+  <h2>Easter Egg: Drum Machine Avanzata</h2>
+
+  <!-- Controlli: slider tempo e pulsanti step -->
+  <div class="controls">
+    <label class="tempo-label" for="tempoSlider">Tempo (BPM):</label>
+    <input type="range" id="tempoSlider" min="30" max="300" value="120" step="1">
+    <span class="tempo-value" id="tempoValue">120</span>
+
+    <div class="steps-buttons">
+      <span style="margin-right:5px;">Steps:</span>
+      <button data-step="16">16</button>
+      <button data-step="32">32</button>
+      <button data-step="64">64</button>
+    </div>
   </div>
+
+  <!-- Drum Machine (tabella generata via JS) -->
+  <div class="drum-machine" id="drumMachine"></div>
+
+  <!-- Pulsanti Play / Stop e Ritorno -->
+  <button class="play-button" id="playBtn">Play</button>
+  <button class="stop-button" id="stopBtn">Stop</button>
+  <a href="index.html" class="back-button">Torna indietro</a>
 </div>
 
 <!-- AUDIO TAGS PER I SUONI (nessun fetch) -->
