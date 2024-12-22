@@ -2,13 +2,13 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drum Machine Generativa</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: #121212; 
+      background: #121212;
       color: #ffffff;
       font-family: "Helvetica Neue", Arial, sans-serif;
       display: flex;
@@ -16,21 +16,65 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      overflow: hidden;
       position: relative;
+      overflow: hidden;
     }
 
     .random-image {
       position: absolute;
-      opacity: 0.8;
+      opacity: 0.1;
+      animation: float 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-30px);
+      }
+    }
+
+    .vinyl {
+      position: absolute;
+      width: calc(120%); /* Dimensione dinamica aggiornata via JavaScript */
+      height: calc(120%); /* Dimensione dinamica aggiornata via JavaScript */
+      border-radius: 50%;
+      overflow: hidden;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      pointer-events: none;
+      animation: none;
+      border: 10px solid #000; /* Contorno nero */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    .vinyl-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .vinyl.playing {
+      animation: spin var(--spin-duration, 10s) linear infinite; /* Nessuno spostamento */
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .content {
       position: relative;
-      z-index: 100;
+      z-index: 3;
       width: 100%;
       max-width: 800px;
-      height: 90%;
       text-align: center;
       overflow-y: auto;
       padding: 10px;
@@ -147,8 +191,8 @@
     }
 
     .step {
-      width: 20px;
-      height: 20px;
+      width: 25px;
+      height: 25px;
       border: 1px solid #555;
       border-radius: 50%;
       background: #222;
@@ -156,7 +200,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: all 0.2s;
+      transition: background 0.1s, transform 0.1s;
     }
 
     .step.active {
@@ -165,12 +209,13 @@
 
     .step.current {
       box-shadow: 0 0 10px 4px #ff5722;
+      transform: scale(1.2);
     }
 
     .play-button, .stop-button {
       display: inline-block;
       margin: 10px;
-      padding: 10px 20px;
+      padding: 15px 25px;
       color: #fff;
       font-size: 1em;
       font-weight: bold;
@@ -192,53 +237,28 @@
     .stop-button:hover {
       background: #7b1fa2;
     }
-	
-	
-.vinyl {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 5px solid #000;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: none;
-  transition: transform 0.2s ease;
-}
 
-.vinyl-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+    /* Mobile View */
+    @media (max-width: 768px) {
+      .vinyl {
+        width: calc(140%);
+        height: calc(140%);
+      }
 
-.vinyl.playing {
-  animation: spin var(--spin-duration) linear infinite;
-}
+      .content {
+        width: 95%;
+      }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
-
-
-	
+      .step {
+        width: 20px;
+        height: 20px;
+      }
+    }
   </style>
 </head>
 <body>
 
-<!-- IMMAGINI RANDOM SFONDO -->
+<!-- Sfondo con immagini random -->
 <script>
   const NUM_IMAGES = 100;
   const imgSrc = 'dammi70euro.png';
@@ -259,8 +279,29 @@
     img.style.position = 'absolute';
     document.body.appendChild(img);
   }
+
+  // Aggiorna dinamicamente la dimensione del vinile
+  function updateVinylSize() {
+    const drumMachine = document.querySelector('.drum-machine');
+    const vinyl = document.querySelector('.vinyl');
+    if (drumMachine && vinyl) {
+      const drumWidth = drumMachine.offsetWidth;
+      const vinylDiameter = drumWidth * 1.2; // 20% maggiore
+      vinyl.style.width = `${vinylDiameter}px`;
+      vinyl.style.height = `${vinylDiameter}px`;
+    }
+  }
+
+  window.addEventListener('resize', updateVinylSize);
+  document.addEventListener('DOMContentLoaded', updateVinylSize);
 </script>
 
+<!-- Disco Vinile -->
+<div class="vinyl" id="vinyl">
+  <img src="dammi70euro.png" alt="Vinyl" class="vinyl-image" />
+</div>
+
+<!-- Contenuto -->
 <div class="content">
   <h1>Drum Machine Generativa</h1>
   <h2>Ritmi Infiniti</h2>
@@ -281,10 +322,6 @@
 
   <!-- Drum Machine -->
   <div class="drum-machine" id="drumMachine"></div>
-  
-  <div class="vinyl">
-  <img src="dammi70euro.png" alt="Vinyl" class="vinyl-image" />
-</div>
 
   <!-- Pulsanti Play / Stop -->
   <button class="play-button" id="playBtn">Play</button>
