@@ -1,78 +1,179 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Seconda Pagina</title>
-<link rel="stylesheet" href="style.css">
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #121212; 
-    color: #ffffff;
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    overflow: hidden; 
-    position: relative;
-    height: 100vh;
-    width: 100vw;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seconda Pagina con Drum Machine</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #121212; 
+      color: #ffffff;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden; 
+      position: relative;
+      height: 100vh;
+      width: 100vw;
+    }
 
-  h1 {
-    color: gold;
-    margin-top: 50px;
-    text-align: center;
-    position: relative;
-    z-index: 100; 
-  }
+    .content {
+      position: relative;
+      z-index: 100;
+      text-align: center;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    /* Immagini sullo sfondo */
+    .random-image {
+      position: absolute;
+      opacity: 1;
+    }
 
-  .content {
-    position: relative;
-    z-index: 100;
-    text-align: center;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+    /* Contenitore Drum Machine */
+    .drum-machine {
+      margin: 20px auto;
+      display: inline-block;
+      text-align: left;
+      background: #1d1d1d;
+      padding: 20px;
+      border-radius: 8px;
+    }
 
-  .random-image {
-    position: absolute;
-    opacity: 1;
-  }
-</style>
+    h1, h2 {
+      color: gold;
+      margin: 10px 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+
+    th, td {
+      padding: 5px 10px;
+      text-align: center;
+    }
+
+    /* Step attivo */
+    .active-step {
+      background: #00b0ff !important;
+    }
+
+    /* Bottone Play/Stop */
+    .play-button {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #ff5722;
+      color: #fff;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .play-button:hover {
+      background: #e64a19;
+    }
+
+    /* Bottone per tornare indietro */
+    .back-button {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #00b0ff;
+      color: #fff;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 15px;
+      text-decoration: none;
+      text-align: center;
+    }
+    .back-button:hover {
+      background: #0091cc;
+    }
+  </style>
 </head>
 <body>
 
+<!-- CONTENUTO: DRUM MACHINE + TITOLO -->
 <div class="content">
   <h1>Seconda Pagina</h1>
-  <!-- Bottone con la scritta "Vai a letto" e l’emoji del letto -->
-  <a href="index.html" class="big-button">🛏️ Vai a letto 🛏️</a>
+  <h2>Easter Egg: Drum Machine!</h2>
+  
+  <!-- Sezione Drum Machine -->
+  <div class="drum-machine">
+    <table>
+      <thead>
+        <tr>
+          <th>Strumento</th>
+          <!-- 8 step -->
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+          <th>8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Kick row -->
+        <tr>
+          <td>Kick</td>
+          <td><input type="checkbox" data-sound="kick" data-step="0"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="1"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="2"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="3"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="4"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="5"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="6"></td>
+          <td><input type="checkbox" data-sound="kick" data-step="7"></td>
+        </tr>
+        <!-- Snare row -->
+        <tr>
+          <td>Snare</td>
+          <td><input type="checkbox" data-sound="snare" data-step="0"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="1"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="2"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="3"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="4"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="5"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="6"></td>
+          <td><input type="checkbox" data-sound="snare" data-step="7"></td>
+        </tr>
+        <!-- Hi-Hat row -->
+        <tr>
+          <td>Hi-Hat</td>
+          <td><input type="checkbox" data-sound="hihat" data-step="0"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="1"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="2"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="3"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="4"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="5"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="6"></td>
+          <td><input type="checkbox" data-sound="hihat" data-step="7"></td>
+        </tr>
+      </tbody>
+    </table>
+    <button id="playBtn" class="play-button">Play</button>
+    <a href="index.html" class="back-button">Torna indietro</a>
+  </div>
 </div>
 
-<script>
-  // Tante immagini per coprire tutto lo sfondo
-  const NUM_IMAGES = 200;
-  const imgSrc = 'dammi70euro.png';
+<!-- AUDIO TAGS PER I SUONI (nessun fetch) -->
+<audio id="kickAudio" src="drums/kick.wav" preload="auto"></audio>
+<audio id="snareAudio" src="drums/snare.wav" preload="auto"></audio>
+<audio id="hihatAudio" src="drums/hihat.wav" preload="auto"></audio>
 
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-
-  for (let i = 0; i < NUM_IMAGES; i++) {
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.classList.add('random-image');
-
-    const x = Math.random() * screenWidth;
-    const y = Math.random() * screenHeight;
-
-    const size = 200 + Math.random() * 200; 
-    img.style.width = size + 'px';
-    img.style.height = 'auto';
-    img.style.left = x + 'px';
-    img.style.top = y + 'px';
-
-    document.body.appendChild(img);
-  }
-</script>
+<!-- Linkiamo il file JS separato -->
+<script src="drummachine.js"></script>
 
 </body>
 </html>
