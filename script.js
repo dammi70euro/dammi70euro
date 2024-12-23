@@ -15,7 +15,7 @@ const mp3Files = [
   "Giochi sull'acqua.mp3",
   "kenjem.mp3",
   "lofi.mp3",
-  "mette carne.mpeg",
+  "mette carne.mp3",
   "no a letto.mp3",
   "no.mp3",
   "non mi sento tanto bene.mp3",
