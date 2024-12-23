@@ -32,6 +32,22 @@
       border-radius: 8px;
     }
 
+    .sognotron-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+      color: #ffffff;
+      transition: all 0.3s ease;
+      z-index: 10; /* Assicurarsi che stia sopra l'immagine */
+    }
+
+    .sognotron-label.playing {
+      text-shadow: 0 0 20px rgba(255, 255, 255, 1);
+    }
+
     .control {
       margin-top: 10px;
     }
@@ -59,12 +75,41 @@
     .play-button:hover {
       background: #0091cc;
     }
+	
+	 .back-button {
+
+      top: 20px;
+      left: 20px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 10px 15px;
+      color: #fff;
+      background-color: var(--button-color, #00b0ff);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-button:hover {
+      opacity: 0.8;
+    }
+
+    .back-button .emoji {
+      font-size: 1.2em;
+    }
+	
   </style>
 </head>
 <body>
 
   <div class="synth-container">
-  <div class="sognotron-label" id="sognotronLabel">SOGNOTRON</div>
+    <!-- Pulsante Back -->
+
+    <div class="sognotron-label" id="sognotronLabel">SOGNOTRON</div>
     <img src="image.png" alt="Synth" class="synth-image">
     <div class="control">
       <label for="vco1">VCO1 Pitch:</label>
@@ -79,10 +124,16 @@
       <input type="range" id="vcf" min="0" max="100" value="50">
     </div>
     <button class="play-button" id="playButton">Play</button>
+	<button class="back-button" onclick="window.location.href='index.html'">
+  <span class="emoji">🛏️</span>
+  Vai a Letto
+</button>
   </div>
-
-  <script src="synt.js"></script>
+  
+    <script src="synt.js"></script>
     <script>
+
+  <script>
     document.addEventListener("DOMContentLoaded", () => {
       const sognotronLabel = document.getElementById("sognotronLabel");
       const vco1Control = document.getElementById("vco1");
