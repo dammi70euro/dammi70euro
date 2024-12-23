@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sintetizzatore</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .synth-container {
+      position: relative;
+      text-align: center;
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .synth-image {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 8px;
+    }
+
+    .control {
+      margin-top: 10px;
+    }
+
+    .control label {
+      margin-right: 10px;
+    }
+
+    .control input[type="range"] {
+      width: 150px;
+    }
+
+    .play-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #00b0ff;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+    }
+
+    .play-button:hover {
+      background: #0091cc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="synth-container">
+  <div class="sognotron-label" id="sognotronLabel">SOGNOTRON</div>
+    <img src="image.png" alt="Synth" class="synth-image">
+    <div class="control">
+      <label for="vco1">VCO1 Pitch:</label>
+      <input type="range" id="vco1" min="0" max="100" value="50">
+    </div>
+    <div class="control">
+      <label for="vco2">VCO2 Pitch:</label>
+      <input type="range" id="vco2" min="0" max="100" value="50">
+    </div>
+    <div class="control">
+      <label for="vcf">VCF Cutoff:</label>
+      <input type="range" id="vcf" min="0" max="100" value="50">
+    </div>
+    <button class="play-button" id="playButton">Play</button>
+  </div>
+
+  <script src="synt.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sognotronLabel = document.getElementById("sognotronLabel");
+      const vco1Control = document.getElementById("vco1");
+      const vco2Control = document.getElementById("vco2");
+      const vcfControl = document.getElementById("vcf");
+      const playButton = document.getElementById("playButton");
+
+      let isPlaying = false;
+
+      // Funzione per avviare/arrestare il synth
+      function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          sognotronLabel.classList.add("playing");
+          playButton.textContent = "Stop";
+        } else {
+          sognotronLabel.classList.remove("playing");
+          playButton.textContent = "Play";
+        }
+      }
+
+      // Funzione per aggiornare il colore RGB dinamico
+      function updateColor() {
+        const red = Math.floor(vco1Control.value * 2.55); // Scala 0-255
+        const green = Math.floor(vco2Control.value * 2.55); // Scala 0-255
+        const blue = Math.floor(vcfControl.value * 2.55); // Scala 0-255
+        sognotronLabel.style.color = `rgb(${red}, ${green}, ${blue})`;
+        sognotronLabel.style.textShadow = `0 0 15px rgb(${red}, ${green}, ${blue})`;
+      }
+
+      // Event listeners
+      playButton.addEventListener("click", togglePlay);
+      vco1Control.addEventListener("input", updateColor);
+      vco2Control.addEventListener("input", updateColor);
+      vcfControl.addEventListener("input", updateColor);
+    });
+  </script>
+</body>
+</html>
