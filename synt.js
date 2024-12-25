@@ -11,12 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const vco1Control = document.getElementById("vco1");
   const vco2Control = document.getElementById("vco2");
   const vcfControl = document.getElementById("vcf");
+  const tempoSlider = document.getElementById("tempoSlider");
+  const tempoValue = document.getElementById("tempoValue");
   const playButton = document.getElementById("playButton");
   const sequencer1 = document.getElementById("sequencer");
   const sequencer2 = document.getElementById("sequencer2");
   const randomFill = document.getElementById("randomFill");
   const randomize = document.getElementById("randomize");
   const clear = document.getElementById("clear");
+
+  let intervalId = null;
+  let currentStep = 0;
+  let tempo = 120;
 
   function startSynth() {
     oscillator1 = audioContext.createOscillator();
@@ -57,6 +63,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function handleStep() {
+    const allSteps = [...sequencer1.children, ...sequencer2.children];
+    allSteps.forEach((step, index) => {
+      if (index === currentStep) {
+        step.classList.add("current");
+        if (step.classList.contains("active")) {
+          if (!oscillator1 || !oscillator2 || !filter) {
+            startSynth();
+          }
+          updateSynth();
+        } else {
+          stopSynth();
+        }
+      } else {
+        step.classList.remove("current");
+      }
+    });
+    currentStep = (currentStep + 1) % numSteps;
+  }
+
+  function startSequencer() {
+    if (!intervalId) {
+      const stepDuration = (60 / tempo) / 4;
+      intervalId = setInterval(handleStep, stepDuration * 1000);
+    }
+  }
+
+  function stopSequencer() {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+      [...sequencer1.children, ...sequencer2.children].forEach((step) =>
+        step.classList.remove("current")
+      );
+      stopSynth();
+    }
+  }
+
   function buildSequencer() {
     sequencer1.innerHTML = "";
     sequencer2.innerHTML = "";
@@ -77,47 +121,46 @@ document.addEventListener("DOMContentLoaded", () => {
     sequencer.appendChild(step);
   }
 
-  function randomizeSteps() {
+  randomize.addEventListener("click", () => {
     const fillPercentage = parseInt(randomFill.value, 10);
-    randomizeArray(steps1, fillPercentage, sequencer1);
-    randomizeArray(steps2, fillPercentage, sequencer2);
-  }
-
-  function randomizeArray(stepsArray, fillPercentage, sequencer) {
-    stepsArray.forEach((_, index) => {
-      const isActive = Math.random() < fillPercentage / 100;
-      stepsArray[index] = isActive;
-      const step = sequencer.children[index];
-      step.classList.toggle("active", isActive);
+    [steps1, steps2].forEach((steps, i) => {
+      const sequencer = i === 0 ? sequencer1 : sequencer2;
+      steps.forEach((_, index) => {
+        const isActive = Math.random() < fillPercentage / 100;
+        steps[index] = isActive;
+        sequencer.children[index].classList.toggle("active", isActive);
+      });
     });
-  }
+  });
 
-  function clearSteps() {
-    clearArray(steps1, sequencer1);
-    clearArray(steps2, sequencer2);
-  }
+  clear.addEventListener("click", () => {
+    [steps1, steps2].forEach((steps, i) => {
+      const sequencer = i === 0 ? sequencer1 : sequencer2;
+      steps.fill(false);
+      Array.from(sequencer.children).forEach((step) =>
+        step.classList.remove("active")
+      );
+    });
+  });
 
-  function clearArray(stepsArray, sequencer) {
-    stepsArray.fill(false);
-    Array.from(sequencer.children).forEach((step) => step.classList.remove("active"));
-  }
-
-  playButton.addEventListener("click", () => {
-    if (playButton.textContent === "Play") {
-      startSynth();
-      playButton.textContent = "Stop";
-    } else {
-      stopSynth();
-      playButton.textContent = "Play";
+  tempoSlider.addEventListener("input", () => {
+    tempo = parseInt(tempoSlider.value, 10);
+    tempoValue.textContent = `${tempo} BPM`;
+    if (intervalId) {
+      clearInterval(intervalId);
+      startSequencer();
     }
   });
 
-  randomize.addEventListener("click", randomizeSteps);
-  clear.addEventListener("click", clearSteps);
-
-  vco1Control.addEventListener("input", updateSynth);
-  vco2Control.addEventListener("input", updateSynth);
-  vcfControl.addEventListener("input", updateSynth);
+  playButton.addEventListener("click", () => {
+    if (playButton.textContent === "Play") {
+      startSequencer();
+      playButton.textContent = "Stop";
+    } else {
+      stopSequencer();
+      playButton.textContent = "Play";
+    }
+  });
 
   buildSequencer();
 });
