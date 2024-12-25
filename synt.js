@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let oscillator1 = null;
   let oscillator2 = null;
   let filter = null;
+  let gainNode = null;
 
   const numSteps = 16;
   const steps1 = Array(numSteps / 2).fill(false);
@@ -11,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const vco1Control = document.getElementById("vco1");
   const vco2Control = document.getElementById("vco2");
   const vcfControl = document.getElementById("vcf");
+  const decayControl = document.getElementById("decay");
   const tempoSlider = document.getElementById("tempoSlider");
   const tempoValue = document.getElementById("tempoValue");
   const playButton = document.getElementById("playButton");
@@ -28,13 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
     oscillator1 = audioContext.createOscillator();
     oscillator2 = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
+    gainNode = audioContext.createGain();
 
     oscillator1.type = "sawtooth";
     oscillator2.type = "square";
     filter.type = "lowpass";
-
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.1;
+    gainNode.gain.value = 0;
 
     oscillator1.connect(filter);
     oscillator2.connect(filter);
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     oscillator1 = null;
     oscillator2 = null;
     filter = null;
+    gainNode = null;
   }
 
   function updateSynth() {
@@ -63,18 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function triggerSynth() {
+    if (!oscillator1 || !oscillator2 || !filter || !gainNode) {
+      startSynth();
+    }
+    updateSynth();
+    gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + parseFloat(decayControl.value));
+  }
+
   function handleStep() {
     const allSteps = [...sequencer1.children, ...sequencer2.children];
     allSteps.forEach((step, index) => {
       if (index === currentStep) {
         step.classList.add("current");
         if (step.classList.contains("active")) {
-          if (!oscillator1 || !oscillator2 || !filter) {
-            startSynth();
-          }
-          updateSynth();
-        } else {
-          stopSynth();
+          triggerSynth();
         }
       } else {
         step.classList.remove("current");

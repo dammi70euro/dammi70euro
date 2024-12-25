@@ -85,6 +85,18 @@
     .back-button:hover {
       background: #e64a19;
     }
+
+    .tempo-slider-container {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .tempo-slider {
+      width: 50%;
+    }
   </style>
 </head>
 <body>
@@ -102,6 +114,16 @@
       <label for="vcf">VCF Cutoff:</label>
       <input type="range" id="vcf" min="0" max="100" value="50">
     </div>
+    <div class="control">
+      <label for="decay">Decay:</label>
+      <input type="range" id="decay" min="0" max="5" step="0.1" value="1">
+    </div>
+
+    <div class="tempo-slider-container">
+      <label for="tempoSlider">Tempo:</label>
+      <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
+      <span id="tempoValue">120 BPM</span>
+    </div>
 
     <div class="step-sequencer">
       <h2>Step Sequencer</h2>
@@ -114,11 +136,6 @@
         <button id="clear">❌ Cancella</button>
       </div>
     </div>
-	<div class="tempo-slider-container">
-  <label for="tempoSlider">Tempo:</label>
-  <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
-  <span id="tempoValue">120 BPM</span>
-</div>
 
     <button class="play-button" id="playButton">Play</button>
     <button class="back-button" onclick="window.location.href='index.html'">Vai a Letto</button>
