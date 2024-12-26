@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .synth-panel {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 800px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .knob {
+            width: 50px;
+            height: 50px;
+            background: #222;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 20px;
+            background: white;
+            transform-origin: bottom;
+            transform: translate(-50%, -100%) rotate(0deg);
+        }
+        
+        .label {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .sublabel {
+            color: #aaa;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .volume-knob {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .power-button {
+            background: #ff3333;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .power-button.on {
+            background: #33ff33;
+        }
+
+        .adsr-section {
+            grid-column: span 4;
+            display: flex;
+            justify-content: space-around;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .keyboard {
+            grid-column: span 4;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .key {
+            width: 40px;
+            height: 120px;
+            background: white;
+            border: 1px solid #666;
+            cursor: pointer;
+        }
+
+        .key.black {
+            background: #222;
+            height: 80px;
+            width: 30px;
+            margin: 0 -15px;
+            z-index: 1;
+        }
+
+        .key:active, .key.pressed {
+            background: #ccc;
+        }
+
+        .key.black:active, .key.black.pressed {
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="synth-container">
+        <button class="power-button">POWER</button>
+        <div class="synth-panel">
+            <!-- Oscillator Section -->
+            <div class="control-group">
+                <div class="label">OSCILLATOR</div>
+                <div class="knob" data-parameter="frequency">
+                    <div class="sublabel">FREQ</div>
+                </div>
+                <div class="knob" data-parameter="detune">
+                    <div class="sublabel">FINE</div>
+                </div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="control-group">
+                <div class="label">FILTER</div>
+                <div class="knob" data-parameter="cutoff">
+                    <div class="sublabel">CUTOFF</div>
+                </div>
+                <div class="knob" data-parameter="resonance">
+                    <div class="sublabel">RES</div>
+                </div>
+            </div>
+            
+            <!-- Volume Section -->
+            <div class="control-group">
+                <div class="label">MASTER</div>
+                <div class="knob volume-knob" data-parameter="volume">
+                    <div class="sublabel">VOLUME</div>
+                </div>
+            </div>
+
+            <!-- ADSR Section -->
+            <div class="adsr-section">
+                <div class="control-group">
+                    <div class="label">A</div>
+                    <div class="knob" data-parameter="attack">
+                        <div class="sublabel">ATTACK</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="label">D</div>
+                    <div class="knob" data-parameter="decay">
+                        <div class="sublabel">DECAY</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="label">S</div>
+                    <div class="knob" data-parameter="sustain">
+                        <div class="sublabel">SUSTAIN</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="label">R</div>
+                    <div class="knob" data-parameter="release">
+                        <div class="sublabel">RELEASE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard -->
+            <div class="keyboard">
+                <div class="key" data-note="60"></div>
+                <div class="key black" data-note="61"></div>
+                <div class="key" data-note="62"></div>
+                <div class="key black" data-note="63"></div>
+                <div class="key" data-note="64"></div>
+                <div class="key" data-note="65"></div>
+                <div class="key black" data-note="66"></div>
+                <div class="key" data-note="67"></div>
+                <div class="key black" data-note="68"></div>
+                <div class="key" data-note="69"></div>
+                <div class="key black" data-note="70"></div>
+                <div class="key" data-note="71"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Synth {
+            constructor() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.isPlaying = false;
+                this.activeNotes = new Map();
+                
+                // Master gain
+                this.masterGain = this.audioContext.createGain();
+                this.masterGain.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+                this.masterGain.connect(this.audioContext.destination);
+
+                // ADSR default values
+                this.adsr = {
+                    attack: 0.1,
+                    decay: 0.1,
+                    sustain: 0.7,
+                    release: 0.2
+                };
+            }
+
+            createOscillator(frequency) {
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                const filter = this.audioContext.createBiquadFilter();
+                
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+                
+                gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+                
+                oscillator.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(this.masterGain);
+                
+                return { oscillator, gainNode, filter };
+            }
+
+            noteOn(note) {
+                if (this.activeNotes.has(note)) return;
+                
+                const frequency = 440 * Math.pow(2, (note - 69) / 12);
+                const { oscillator, gainNode, filter } = this.createOscillator(frequency);
+                
+                const now = this.audioContext.currentTime;
+                
+                // ADSR envelope
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(1, now + this.adsr.attack);
+                gainNode.gain.linearRampToValueAtTime(this.adsr.sustain, now + this.adsr.attack + this.adsr.decay);
+                
+                oscillator.start(now);
+                
+                this.activeNotes.set(note, { oscillator, gainNode, filter });
+            }
+
+            noteOff(note) {
+                if (!this.activeNotes.has(note)) return;
+                
+                const { oscillator, gainNode } = this.activeNotes.get(note);
+                const now = this.audioContext.currentTime;
+                
+                gainNode.gain.cancelScheduledValues(now);
+                gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + this.adsr.release);
+                
+                oscillator.stop(now + this.adsr.release);
+                
+                this.activeNotes.delete(note);
+            }
+            
+            setParameter(parameter, value) {
+                switch(parameter) {
+                    case 'volume':
+                        this.masterGain.gain.setValueAtTime(value, this.audioContext.currentTime);
+                        break;
+                    case 'attack':
+                        this.adsr.attack = value * 2;
+                        break;
+                    case 'decay':
+                        this.adsr.decay = value * 2;
+                        break;
+                    case 'sustain':
+                        this.adsr.sustain = value;
+                        break;
+                    case 'release':
+                        this.adsr.release = value * 2;
+                        break;
+                    case 'cutoff':
+                        this.activeNotes.forEach(({ filter }) => {
+                            const frequency = Math.pow(20000, value) * 20;
+                            filter.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                        });
+                        break;
+                    case 'resonance':
+                        this.activeNotes.forEach(({ filter }) => {
+                            filter.Q.setValueAtTime(value * 30, this.audioContext.currentTime);
+                        });
+                        break;
+                }
+            }
+            
+            start() {
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+            }
+            
+            stop() {
+                this.activeNotes.forEach((note, key) => this.noteOff(key));
+                this.activeNotes.clear();
+            }
+        }
+
+        // Initialize synth
+        const synth = new Synth();
+        
+        // Power button handling
+        const powerButton = document.querySelector('.power-button');
+        let isPowerOn = false;
+        
+        powerButton.addEventListener('click', () => {
+            isPowerOn = !isPowerOn;
+            powerButton.classList.toggle('on');
+            if (isPowerOn) {
+                powerButton.textContent = 'POWER ON';
+                synth.start();
+            } else {
+                powerButton.textContent = 'POWER OFF';
+                synth.stop();
+            }
+        });
+
+        // Keyboard handling
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('mousedown', () => {
+                if (!isPowerOn) return;
+                key.classList.add('pressed');
+                synth.noteOn(parseInt(key.dataset.note));
+            });
+            
+            key.addEventListener('mouseup', () => {
+                key.classList.remove('pressed');
+                synth.noteOff(parseInt(key.dataset.note));
+            });
+            
+            key.addEventListener('mouseleave', () => {
+                key.classList.remove('pressed');
+                synth.noteOff(parseInt(key.dataset.note));
+            });
+        });
+
+        // Knob interaction
+        document.querySelectorAll('.knob').forEach(knob => {
+            let rotating = false;
+            let startY;
+            let currentRotation = 0;
+            let currentValue = 0.5;
+            
+            const parameter = knob.dataset.parameter;
+            
+            knob.addEventListener('mousedown', (e) => {
+                rotating = true;
+                startY = e.clientY;
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!rotating) return;
+                
+                const deltaY = startY - e.clientY;
+                
+                // Update rotation (visual)
+                currentRotation = Math.max(-150, Math.min(150, currentRotation + deltaY/2));
+                knob.style.transform = `rotate(${currentRotation}deg)`;
+                
+                // Update value (audio)
+                currentValue = Math.max(0, Math.min(1, currentValue + deltaY/200));
+                if (isPowerOn) {
+                    synth.setParameter(parameter, currentValue);
+                }
+                
+                startY = e.clientY;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                rotating = false;
+            });
+        });
+
+        // PC Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!isPowerOn || e.repeat) return;
+            
+            const keyMap = {
+                'a': 60,  // DO (C)
+                'w': 61,  // DO# (C#)
+                's': 62,  // RE (D)
+                'e': 63,  // RE# (D#)
+                'd': 64,  // MI (E)
+                'f': 65,  // FA (F)
+                't': 66,  // FA# (F#)
+                'g': 67,  // SOL (G)
+                'y': 68,  // SOL# (G#)
+                'h': 69,  // LA (A)
+                'u': 70,  // LA# (A#)
+                'j': 71   // SI (B)
+            };
+            
+            if (keyMap[e.key]) {
+                const note = keyMap[e.key];
+                synth.noteOn(note);
+                document.querySelector(`[data-note="${note}"]`).classList.add('pressed');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const keyMap = {
+                'a': 60, 'w': 61, 's': 62, 'e': 63, 'd': 64, 
+                'f': 65, 't': 66, 'g': 67, 'y': 68, 'h': 69, 
+                'u': 70, 'j': 71
+            };
+            
+            if (keyMap[e.key]) {
+                const note = keyMap[e.key];
+                synth.noteOff(note);
+                document.querySelector(`[data-note="${note}"]`).classList.remove('pressed');
+            }
+        });
+    </script>
+</body>
+</html>
