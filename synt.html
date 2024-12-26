@@ -109,21 +109,47 @@
 <body>
   <div class="synth-container">
     <h1>SOGNOTRON</h1>
-    <div class="control">
+	
+	
+	 <div class="control">
       <label for="vco1">VCO1 Pitch:</label>
       <input type="range" id="vco1" min="0" max="100" value="50">
+      <label for="vco1Lfo">LFO:</label>
+      <input type="checkbox" id="vco1Lfo">
+      <label for="vco1LfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vco1LfoAmp" min="0" max="100" value="50">
+      <label for="vco1LfoRate">LFO Rate:</label>
+      <input type="range" id="vco1LfoRate" min="0" max="100" value="50">
     </div>
     <div class="control">
       <label for="vco2">VCO2 Pitch:</label>
       <input type="range" id="vco2" min="0" max="100" value="50">
+      <label for="vco2Lfo">LFO:</label>
+      <input type="checkbox" id="vco2Lfo">
+      <label for="vco2LfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vco2LfoAmp" min="0" max="100" value="50">
+      <label for="vco2LfoRate">LFO Rate:</label>
+      <input type="range" id="vco2LfoRate" min="0" max="100" value="50">
     </div>
     <div class="control">
       <label for="vcf">VCF Cutoff:</label>
       <input type="range" id="vcf" min="0" max="100" value="50">
+      <label for="vcfLfo">LFO:</label>
+      <input type="checkbox" id="vcfLfo">
+      <label for="vcfLfoAmp">LFO Amplitude:</label>
+      <input type="range" id="vcfLfoAmp" min="0" max="100" value="50">
+      <label for="vcfLfoRate">LFO Rate:</label>
+      <input type="range" id="vcfLfoRate" min="0" max="100" value="50">
     </div>
     <div class="control">
       <label for="decay">Decay:</label>
       <input type="range" id="decay" min="0" max="5" step="0.1" value="1">
+      <label for="decayLfo">LFO:</label>
+      <input type="checkbox" id="decayLfo">
+      <label for="decayLfoAmp">LFO Amplitude:</label>
+      <input type="range" id="decayLfoAmp" min="0" max="100" value="50">
+      <label for="decayLfoRate">LFO Rate:</label>
+      <input type="range" id="decayLfoRate" min="0" max="100" value="50">
     </div>
 
     <div class="tempo-slider-container">
@@ -149,4 +175,5 @@
   </div>
   <script src="synt.js"></script>
 </body>
+
 </html>

@@ -5,6 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let filter = null;
   let gainNode = null;
 
+  let lfo1 = null;
+  let lfo1Gain = null;
+  let lfo2 = null;
+  let lfo2Gain = null;
+  let lfoFilter = null;
+  let lfoFilterGain = null;
+
   const numSteps = 16;
   const steps1 = Array(numSteps / 2).fill(false);
   const steps2 = Array(numSteps / 2).fill(false);
@@ -22,26 +29,62 @@ document.addEventListener("DOMContentLoaded", () => {
   const randomize = document.getElementById("randomize");
   const clear = document.getElementById("clear");
 
+  const vco1LfoCheckbox = document.getElementById("vco1Lfo");
+  const vco1LfoAmpControl = document.getElementById("vco1LfoAmp");
+  const vco1LfoRateControl = document.getElementById("vco1LfoRate");
+
+  const vco2LfoCheckbox = document.getElementById("vco2Lfo");
+  const vco2LfoAmpControl = document.getElementById("vco2LfoAmp");
+  const vco2LfoRateControl = document.getElementById("vco2LfoRate");
+
+  const vcfLfoCheckbox = document.getElementById("vcfLfo");
+  const vcfLfoAmpControl = document.getElementById("vcfLfoAmp");
+  const vcfLfoRateControl = document.getElementById("vcfLfoRate");
+
   let currentStep = 0;
   let tempo = 120;
   let nextStepTime = 0;
   let isPlaying = false;
 
   function startSynth() {
-    oscillator1 = audioContext.createOscillator();
+    oscillator1 = .createOscillatoaudioContextr();
     oscillator2 = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
     gainNode = audioContext.createGain();
+
+    lfo1 = audioContext.createOscillator();
+    lfo1Gain = audioContext.createGain();
+    lfo2 = audioContext.createOscillator();
+    lfo2Gain = audioContext.createGain();
+    lfoFilter = audioContext.createOscillator();
+    lfoFilterGain = audioContext.createGain();
 
     oscillator1.type = "sawtooth";
     oscillator2.type = "square";
     filter.type = "lowpass";
     gainNode.gain.value = 0;
 
+    lfo1.type = "sine";
+    lfo2.type = "sine";
+    lfoFilter.type = "sine";
+
     oscillator1.connect(filter);
     oscillator2.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(audioContext.destination);
+
+    lfo1.connect(lfo1Gain);
+    lfo1Gain.connect(oscillator1.frequency);
+
+    lfo2.connect(lfo2Gain);
+    lfo2Gain.connect(oscillator2.frequency);
+
+    lfoFilter.connect(lfoFilterGain);
+    lfoFilterGain.connect(filter.frequency);
+
+    lfo1.start();
+    lfo2.start();
+    lfoFilter.start();
 
     oscillator1.start();
     oscillator2.start();
@@ -52,10 +95,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function stopSynth() {
     if (oscillator1) oscillator1.stop();
     if (oscillator2) oscillator2.stop();
+    if (lfo1) lfo1.stop();
+    if (lfo2) lfo2.stop();
+    if (lfoFilter) lfoFilter.stop();
     oscillator1 = null;
     oscillator2 = null;
     filter = null;
     gainNode = null;
+    lfo1 = null;
+    lfo1Gain = null;
+    lfo2 = null;
+    lfo2Gain = null;
+    lfoFilter = null;
+    lfoFilterGain = null;
   }
 
   function updateSynth() {
@@ -63,6 +115,15 @@ document.addEventListener("DOMContentLoaded", () => {
       oscillator1.frequency.value = vco1Control.value * 10;
       oscillator2.frequency.value = vco2Control.value * 10;
       filter.frequency.value = vcfControl.value * 100;
+
+      lfo1Gain.gain.value = vco1LfoCheckbox.checked ? vco1LfoAmpControl.value : 0;
+      lfo1.frequency.value = vco1LfoRateControl.value;
+
+      lfo2Gain.gain.value = vco2LfoCheckbox.checked ? vco2LfoAmpControl.value : 0;
+      lfo2.frequency.value = vco2LfoRateControl.value;
+
+      lfoFilterGain.gain.value = vcfLfoCheckbox.checked ? vcfLfoAmpControl.value : 0;
+      lfoFilter.frequency.value = vcfLfoRateControl.value;
     }
   }
 
