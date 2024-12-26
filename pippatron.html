@@ -94,6 +94,23 @@
         .power-button.on {
             background: #33ff33;
         }
+		
+		.back-button {
+            background: linear-gradient(135deg, #5757ff, #3333ff);
+            border: none;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: scale(1.1);
+        }
+		
     </style>
 </head>
 <body>
@@ -155,6 +172,7 @@
                 <div class="jack"></div>
             </div>
         </div>
+		  <button class="back-button" onclick="window.location.href='index.html'">Vai a Letto</button>
     </div>
 
     <script>
