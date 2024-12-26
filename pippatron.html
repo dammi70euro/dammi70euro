@@ -17,7 +17,7 @@
             padding: 20px;
             border-radius: 10px;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(8, 1fr);
             gap: 15px;
             width: 800px;
         }
@@ -27,7 +27,15 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            padding: 10px;
+        }
+        
+        .jack {
+            width: 30px;
+            height: 30px;
+            background: silver;
+            border-radius: 50%;
+            border: 2px solid #666;
+            cursor: pointer;
         }
         
         .knob {
@@ -53,15 +61,9 @@
         
         .label {
             color: white;
-            font-size: 12px;
-            text-align: center;
-            text-transform: uppercase;
-        }
-
-        .sublabel {
-            color: #aaa;
             font-size: 10px;
             text-align: center;
+            text-transform: uppercase;
         }
         
         .volume-knob {
@@ -69,6 +71,16 @@
             height: 70px;
         }
         
+        .volume-labels {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 10px;
+        }
+
         .power-button {
             background: #ff3333;
             border: none;
@@ -82,124 +94,65 @@
         .power-button.on {
             background: #33ff33;
         }
-
-        .adsr-section {
-            grid-column: span 4;
-            display: flex;
-            justify-content: space-around;
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 5px;
-        }
-
-        .keyboard {
-            grid-column: span 4;
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-        }
-
-        .key {
-            width: 40px;
-            height: 120px;
-            background: white;
-            border: 1px solid #666;
-            cursor: pointer;
-        }
-
-        .key.black {
-            background: #222;
-            height: 80px;
-            width: 30px;
-            margin: 0 -15px;
-            z-index: 1;
-        }
-
-        .key:active, .key.pressed {
-            background: #ccc;
-        }
-
-        .key.black:active, .key.black.pressed {
-            background: #000;
-        }
     </style>
 </head>
 <body>
     <div class="synth-container">
         <button class="power-button">POWER</button>
         <div class="synth-panel">
-            <!-- Oscillator Section -->
+            <!-- VCO Section -->
             <div class="control-group">
-                <div class="label">OSCILLATOR</div>
-                <div class="knob" data-parameter="frequency">
-                    <div class="sublabel">FREQ</div>
-                </div>
-                <div class="knob" data-parameter="detune">
-                    <div class="sublabel">FINE</div>
-                </div>
+                <div class="label">VCO 1</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="frequency"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <div class="control-group">
+                <div class="label">FREQ</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="detune"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <div class="control-group">
+                <div class="label">FILTER</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="filter"></div>
+                <div class="jack"></div>
             </div>
             
             <!-- Filter Section -->
             <div class="control-group">
-                <div class="label">FILTER</div>
-                <div class="knob" data-parameter="cutoff">
-                    <div class="sublabel">CUTOFF</div>
-                </div>
-                <div class="knob" data-parameter="resonance">
-                    <div class="sublabel">RES</div>
-                </div>
+                <div class="label">CUTOFF FREQ</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="cutoff"></div>
+                <div class="jack"></div>
+            </div>
+            
+            <!-- Envelope Section -->
+            <div class="control-group">
+                <div class="label">ENVELOPE</div>
+                <div class="jack"></div>
+                <div class="knob" data-parameter="envelope"></div>
+                <div class="jack"></div>
             </div>
             
             <!-- Volume Section -->
             <div class="control-group">
-                <div class="label">MASTER</div>
+                <div class="label">VOLUME</div>
                 <div class="knob volume-knob" data-parameter="volume">
-                    <div class="sublabel">VOLUME</div>
-                </div>
-            </div>
-
-            <!-- ADSR Section -->
-            <div class="adsr-section">
-                <div class="control-group">
-                    <div class="label">A</div>
-                    <div class="knob" data-parameter="attack">
-                        <div class="sublabel">ATTACK</div>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="label">D</div>
-                    <div class="knob" data-parameter="decay">
-                        <div class="sublabel">DECAY</div>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="label">S</div>
-                    <div class="knob" data-parameter="sustain">
-                        <div class="sublabel">SUSTAIN</div>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="label">R</div>
-                    <div class="knob" data-parameter="release">
-                        <div class="sublabel">RELEASE</div>
+                    <div class="volume-labels">
+                        <span>0</span>
+                        <span>10</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Keyboard -->
-            <div class="keyboard">
-                <div class="key" data-note="60"></div>
-                <div class="key black" data-note="61"></div>
-                <div class="key" data-note="62"></div>
-                <div class="key black" data-note="63"></div>
-                <div class="key" data-note="64"></div>
-                <div class="key" data-note="65"></div>
-                <div class="key black" data-note="66"></div>
-                <div class="key" data-note="67"></div>
-                <div class="key black" data-note="68"></div>
-                <div class="key" data-note="69"></div>
-                <div class="key black" data-note="70"></div>
-                <div class="key" data-note="71"></div>
+            
+            <!-- Output Section -->
+            <div class="control-group">
+                <div class="label">OUTPUT</div>
+                <div class="jack"></div>
             </div>
         </div>
     </div>
@@ -209,102 +162,52 @@
             constructor() {
                 this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 this.isPlaying = false;
-                this.activeNotes = new Map();
                 
-                // Master gain
-                this.masterGain = this.audioContext.createGain();
-                this.masterGain.gain.setValueAtTime(0.5, this.audioContext.currentTime);
-                this.masterGain.connect(this.audioContext.destination);
-
-                // ADSR default values
-                this.adsr = {
-                    attack: 0.1,
-                    decay: 0.1,
-                    sustain: 0.7,
-                    release: 0.2
-                };
-            }
-
-            createOscillator(frequency) {
-                const oscillator = this.audioContext.createOscillator();
-                const gainNode = this.audioContext.createGain();
-                const filter = this.audioContext.createBiquadFilter();
+                // Oscillator
+                this.oscillator = this.audioContext.createOscillator();
+                this.oscillator.type = 'sawtooth';
+                this.oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
                 
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+                // Filter
+                this.filter = this.audioContext.createBiquadFilter();
+                this.filter.type = 'lowpass';
+                this.filter.frequency.setValueAtTime(1000, this.audioContext.currentTime);
                 
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+                // Gain (volume)
+                this.gainNode = this.audioContext.createGain();
+                this.gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
                 
-                gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+                // Connect the nodes
+                this.oscillator.connect(this.filter);
+                this.filter.connect(this.gainNode);
+                this.gainNode.connect(this.audioContext.destination);
                 
-                oscillator.connect(filter);
-                filter.connect(gainNode);
-                gainNode.connect(this.masterGain);
-                
-                return { oscillator, gainNode, filter };
-            }
-
-            noteOn(note) {
-                if (this.activeNotes.has(note)) return;
-                
-                const frequency = 440 * Math.pow(2, (note - 69) / 12);
-                const { oscillator, gainNode, filter } = this.createOscillator(frequency);
-                
-                const now = this.audioContext.currentTime;
-                
-                // ADSR envelope
-                gainNode.gain.setValueAtTime(0, now);
-                gainNode.gain.linearRampToValueAtTime(1, now + this.adsr.attack);
-                gainNode.gain.linearRampToValueAtTime(this.adsr.sustain, now + this.adsr.attack + this.adsr.decay);
-                
-                oscillator.start(now);
-                
-                this.activeNotes.set(note, { oscillator, gainNode, filter });
-            }
-
-            noteOff(note) {
-                if (!this.activeNotes.has(note)) return;
-                
-                const { oscillator, gainNode } = this.activeNotes.get(note);
-                const now = this.audioContext.currentTime;
-                
-                gainNode.gain.cancelScheduledValues(now);
-                gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + this.adsr.release);
-                
-                oscillator.stop(now + this.adsr.release);
-                
-                this.activeNotes.delete(note);
+                // Start the oscillator
+                this.oscillator.start();
             }
             
             setParameter(parameter, value) {
                 switch(parameter) {
+                    case 'frequency':
+                        // Map 0-1 to 20-2000 Hz logarithmically
+                        const freq = Math.pow(2000, value) * 20;
+                        this.oscillator.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+                        break;
+                        
+                    case 'detune':
+                        // Map 0-1 to -100 to +100 cents
+                        this.oscillator.detune.setValueAtTime((value * 200 - 100), this.audioContext.currentTime);
+                        break;
+                        
+                    case 'filter':
+                        // Map 0-1 to 20-20000 Hz logarithmically
+                        const filterFreq = Math.pow(20000, value) * 20;
+                        this.filter.frequency.setValueAtTime(filterFreq, this.audioContext.currentTime);
+                        break;
+                        
                     case 'volume':
-                        this.masterGain.gain.setValueAtTime(value, this.audioContext.currentTime);
-                        break;
-                    case 'attack':
-                        this.adsr.attack = value * 2;
-                        break;
-                    case 'decay':
-                        this.adsr.decay = value * 2;
-                        break;
-                    case 'sustain':
-                        this.adsr.sustain = value;
-                        break;
-                    case 'release':
-                        this.adsr.release = value * 2;
-                        break;
-                    case 'cutoff':
-                        this.activeNotes.forEach(({ filter }) => {
-                            const frequency = Math.pow(20000, value) * 20;
-                            filter.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-                        });
-                        break;
-                    case 'resonance':
-                        this.activeNotes.forEach(({ filter }) => {
-                            filter.Q.setValueAtTime(value * 30, this.audioContext.currentTime);
-                        });
+                        // Map 0-1 to 0-1 with logarithmic scaling for more natural volume control
+                        this.gainNode.gain.setValueAtTime(Math.pow(value, 2), this.audioContext.currentTime);
                         break;
                 }
             }
@@ -313,16 +216,18 @@
                 if (this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
+                this.isPlaying = true;
+                this.gainNode.gain.value = 0.5;
             }
             
             stop() {
-                this.activeNotes.forEach((note, key) => this.noteOff(key));
-                this.activeNotes.clear();
+                this.isPlaying = false;
+                this.gainNode.gain.value = 0;
             }
         }
 
         // Initialize synth
-        const synth = new Synth();
+        let synth = new Synth();
         
         // Power button handling
         const powerButton = document.querySelector('.power-button');
@@ -340,31 +245,12 @@
             }
         });
 
-        // Keyboard handling
-        document.querySelectorAll('.key').forEach(key => {
-            key.addEventListener('mousedown', () => {
-                if (!isPowerOn) return;
-                key.classList.add('pressed');
-                synth.noteOn(parseInt(key.dataset.note));
-            });
-            
-            key.addEventListener('mouseup', () => {
-                key.classList.remove('pressed');
-                synth.noteOff(parseInt(key.dataset.note));
-            });
-            
-            key.addEventListener('mouseleave', () => {
-                key.classList.remove('pressed');
-                synth.noteOff(parseInt(key.dataset.note));
-            });
-        });
-
         // Knob interaction
         document.querySelectorAll('.knob').forEach(knob => {
             let rotating = false;
             let startY;
             let currentRotation = 0;
-            let currentValue = 0.5;
+            let currentValue = 0;
             
             const parameter = knob.dataset.parameter;
             
@@ -395,46 +281,6 @@
             document.addEventListener('mouseup', () => {
                 rotating = false;
             });
-        });
-
-        // PC Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            if (!isPowerOn || e.repeat) return;
-            
-            const keyMap = {
-                'a': 60,  // DO (C)
-                'w': 61,  // DO# (C#)
-                's': 62,  // RE (D)
-                'e': 63,  // RE# (D#)
-                'd': 64,  // MI (E)
-                'f': 65,  // FA (F)
-                't': 66,  // FA# (F#)
-                'g': 67,  // SOL (G)
-                'y': 68,  // SOL# (G#)
-                'h': 69,  // LA (A)
-                'u': 70,  // LA# (A#)
-                'j': 71   // SI (B)
-            };
-            
-            if (keyMap[e.key]) {
-                const note = keyMap[e.key];
-                synth.noteOn(note);
-                document.querySelector(`[data-note="${note}"]`).classList.add('pressed');
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            const keyMap = {
-                'a': 60, 'w': 61, 's': 62, 'e': 63, 'd': 64, 
-                'f': 65, 't': 66, 'g': 67, 'y': 68, 'h': 69, 
-                'u': 70, 'j': 71
-            };
-            
-            if (keyMap[e.key]) {
-                const note = keyMap[e.key];
-                synth.noteOff(note);
-                document.querySelector(`[data-note="${note}"]`).classList.remove('pressed');
-            }
         });
     </script>
 </body>
