@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isPlaying = false;
 
   function startSynth() {
-    oscillator1 = .createOscillatoaudioContextr();
+    oscillator1 = audioContext.createOscillator();
     oscillator2 = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
     gainNode = audioContext.createGain();
@@ -110,22 +110,81 @@ document.addEventListener("DOMContentLoaded", () => {
     lfoFilterGain = null;
   }
 
-  function updateSynth() {
-    if (oscillator1 && oscillator2 && filter) {
-      oscillator1.frequency.value = vco1Control.value * 10;
-      oscillator2.frequency.value = vco2Control.value * 10;
-      filter.frequency.value = vcfControl.value * 100;
+// Updating the updateSynth method to include requestAnimationFrame calls for VCO2 and VCF
+function updateSynth() {
+  if (oscillator1 && oscillator2 && filter) {
+    oscillator1.frequency.value = vco1Control.value * 10;
+    oscillator2.frequency.value = vco2Control.value * 10;
+    filter.frequency.value = vcfControl.value * 100;
 
-      lfo1Gain.gain.value = vco1LfoCheckbox.checked ? vco1LfoAmpControl.value : 0;
-      lfo1.frequency.value = vco1LfoRateControl.value;
+    lfo1Gain.gain.value = vco1LfoCheckbox.checked ? vco1LfoAmpControl.value : 0;
+    lfo1.frequency.value = vco1LfoRateControl.value;
 
-      lfo2Gain.gain.value = vco2LfoCheckbox.checked ? vco2LfoAmpControl.value : 0;
-      lfo2.frequency.value = vco2LfoRateControl.value;
+    lfo2Gain.gain.value = vco2LfoCheckbox.checked ? vco2LfoAmpControl.value : 0;
+    lfo2.frequency.value = vco2LfoRateControl.value;
 
-      lfoFilterGain.gain.value = vcfLfoCheckbox.checked ? vcfLfoAmpControl.value : 0;
-      lfoFilter.frequency.value = vcfLfoRateControl.value;
+    lfoFilterGain.gain.value = vcfLfoCheckbox.checked ? vcfLfoAmpControl.value : 0;
+    lfoFilter.frequency.value = vcfLfoRateControl.value;
+
+    if (vco1LfoCheckbox.checked) {
+      requestAnimationFrame(syncVCO1SliderWithLFO);
+    }
+
+    if (vco2LfoCheckbox.checked) {
+      requestAnimationFrame(syncVCO2SliderWithLFO);
+    }
+
+    if (vcfLfoCheckbox.checked) {
+      requestAnimationFrame(syncVCFSliderWithLFO);
     }
   }
+}
+
+
+function syncVCO2SliderWithLFO() {
+  if (vco2LfoCheckbox.checked && lfo2 && lfo2Gain) {
+    const lfoAmplitude = parseFloat(vco2LfoAmpControl.value) || 0;
+    const baseFrequency = parseFloat(vco2Control.value) || 0;
+    const lfoFrequency = lfo2.frequency.value;
+
+    const currentTime = audioContext.currentTime;
+    const lfoValue = baseFrequency + lfoAmplitude * Math.sin(2 * Math.PI * lfoFrequency * currentTime);
+
+    vco2Control.value = Math.max(0, Math.min(100, lfoValue));
+    requestAnimationFrame(syncVCO2SliderWithLFO);
+  }
+}
+
+function syncVCFSliderWithLFO() {
+  if (vcfLfoCheckbox.checked && lfoFilter && lfoFilterGain) {
+    const lfoAmplitude = parseFloat(vcfLfoAmpControl.value) || 0;
+    const baseFrequency = parseFloat(vcfControl.value) || 0;
+    const lfoFrequency = lfoFilter.frequency.value;
+
+    const currentTime = audioContext.currentTime;
+    const lfoValue = baseFrequency + lfoAmplitude * Math.sin(2 * Math.PI * lfoFrequency * currentTime);
+
+    vcfControl.value = Math.max(0, Math.min(100, lfoValue));
+    requestAnimationFrame(syncVCFSliderWithLFO);
+  }
+}
+
+
+function syncVCO1SliderWithLFO() {
+  if (vco1LfoCheckbox.checked && lfo1 && lfo1Gain) {
+    const lfoAmplitude = parseFloat(vco1LfoAmpControl.value) || 0;
+    const baseFrequency = parseFloat(vco1Control.value) || 0;
+    const lfoFrequency = lfo1.frequency.value;
+
+    const scaleFactor = 0.1; // Riduce il rate di aggiornamento
+    const currentTime = audioContext.currentTime * scaleFactor;
+    const lfoValue = baseFrequency + lfoAmplitude * Math.sin(2 * Math.PI * lfoFrequency * currentTime);
+
+    vco1Control.value = Math.max(0, Math.min(100, lfoValue));
+    requestAnimationFrame(syncVCO1SliderWithLFO);
+  }
+}
+
 
   function triggerSynth() {
     if (!oscillator1 || !oscillator2 || !filter || !gainNode) {
