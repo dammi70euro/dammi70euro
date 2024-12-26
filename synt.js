@@ -22,9 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const randomize = document.getElementById("randomize");
   const clear = document.getElementById("clear");
 
-  let intervalId = null;
   let currentStep = 0;
   let tempo = 120;
+  let nextStepTime = 0;
+  let isPlaying = false;
 
   function startSynth() {
     oscillator1 = audioContext.createOscillator();
@@ -90,22 +91,30 @@ document.addEventListener("DOMContentLoaded", () => {
     currentStep = (currentStep + 1) % numSteps;
   }
 
+  function scheduler() {
+    while (nextStepTime < audioContext.currentTime + 0.1) {
+      handleStep();
+      nextStepTime += 60 / tempo / 4;
+    }
+    if (isPlaying) {
+      requestAnimationFrame(scheduler);
+    }
+  }
+
   function startSequencer() {
-    if (!intervalId) {
-      const stepDuration = (60 / tempo) / 4;
-      intervalId = setInterval(handleStep, stepDuration * 1000);
+    if (!isPlaying) {
+      isPlaying = true;
+      currentStep = 0;
+      nextStepTime = audioContext.currentTime;
+      scheduler();
     }
   }
 
   function stopSequencer() {
-    if (intervalId) {
-      clearInterval(intervalId);
-      intervalId = null;
-      [...sequencer1.children, ...sequencer2.children].forEach((step) =>
-        step.classList.remove("current")
-      );
-      stopSynth();
-    }
+    isPlaying = false;
+    stopSynth();
+    const allSteps = [...sequencer1.children, ...sequencer2.children];
+    allSteps.forEach((step) => step.classList.remove("current"));
   }
 
   function buildSequencer() {
@@ -153,19 +162,15 @@ document.addEventListener("DOMContentLoaded", () => {
   tempoSlider.addEventListener("input", () => {
     tempo = parseInt(tempoSlider.value, 10);
     tempoValue.textContent = `${tempo} BPM`;
-    if (intervalId) {
-      clearInterval(intervalId);
-      startSequencer();
-    }
   });
 
   playButton.addEventListener("click", () => {
-    if (playButton.textContent === "Play") {
-      startSequencer();
-      playButton.textContent = "Stop";
-    } else {
+    if (isPlaying) {
       stopSequencer();
       playButton.textContent = "Play";
+    } else {
+      startSequencer();
+      playButton.textContent = "Stop";
     }
   });
 
