@@ -4,12 +4,15 @@ function initGiangiotron() {
     const buttons = document.querySelectorAll('.audio-button');
 
     // Effetti
-    const delay = audioContext.createDelay();
+    const delay = audioContext.createDelay(5.0); // Massimo ritardo di 5 secondi
     const delayFeedback = audioContext.createGain();
     delay.connect(delayFeedback);
     delayFeedback.connect(delay);
 
-    const reverb = audioContext.createGain();
+    const convolver = audioContext.createConvolver(); // Reverbero
+
+    const gainNode = audioContext.createGain(); // Gain finale
+    gainNode.gain.value = 0.5;
 
     // Controlli degli effetti
     const delayCheckbox = document.getElementById('delayCheckbox');
@@ -20,27 +23,47 @@ function initGiangiotron() {
 
     const reverseCheckbox = document.getElementById('reverseCheckbox');
 
+    // Funzione per generare un buffer per il reverbero
+    function createReverbBuffer(decay = 2) {
+        const sampleRate = audioContext.sampleRate;
+        const length = sampleRate * decay;
+        const impulse = audioContext.createBuffer(2, length, sampleRate);
+        for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
+            const impulseData = impulse.getChannelData(channel);
+            for (let i = 0; i < length; i++) {
+                impulseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+            }
+        }
+        return impulse;
+    }
+
+    // Aggiorna il buffer del reverbero
+    reverbSlider.addEventListener('input', () => {
+        convolver.buffer = createReverbBuffer(parseFloat(reverbSlider.value));
+    });
+    convolver.buffer = createReverbBuffer(parseFloat(reverbSlider.value));
+
     // Configurazione degli effetti
-    delay.delayTime.value = 0.5;
-    delayFeedback.gain.value = 0.5;
-    reverb.gain.value = 0.5;
+    delay.delayTime.value = 0.5; // Default ritardo
+    delayFeedback.gain.value = 0.5; // Default feedback
 
     // Funzione per caricare e riprodurre l'audio
     function playAudio(fileName) {
         const audioElement = new Audio(`giangiotron/${fileName}`);
+        audioElement.crossOrigin = 'anonymous';
 
         const track = audioContext.createMediaElementSource(audioElement);
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 1;
 
+        // Connessioni degli effetti
         track.connect(gainNode);
 
-        // Applica effetti
         if (delayCheckbox.checked) {
             gainNode.connect(delay);
+            delay.connect(audioContext.destination);
         }
         if (reverbCheckbox.checked) {
-            gainNode.connect(reverb);
+            gainNode.connect(convolver);
+            convolver.connect(audioContext.destination);
         }
 
         gainNode.connect(audioContext.destination);
@@ -59,10 +82,6 @@ function initGiangiotron() {
     // Eventi per controlli degli effetti
     delaySlider.addEventListener('input', () => {
         delayFeedback.gain.value = parseFloat(delaySlider.value);
-    });
-
-    reverbSlider.addEventListener('input', () => {
-        reverb.gain.value = parseFloat(reverbSlider.value);
     });
 }
 
