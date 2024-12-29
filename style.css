@@ -140,6 +140,43 @@ audio {
         transform: scale(0.9);
     }
 
+
+.big-button,
+    .giangiotron-button {
+      width: 150px;
+      height: 150px;
+      background: linear-gradient(45deg, #ff5722, #03a9f4);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-decoration: none;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.5s ease, background-color 0.5s ease;
+    }
+
+    .big-button:hover,
+    .giangiotron-button:hover {
+      transform: rotate(360deg);
+      background: linear-gradient(45deg, #03a9f4, #ff5722);
+    }
+
+    .big-button:active,
+    .giangiotron-button:active {
+      transform: scale(0.9);
+    }
+
+
 .big-button:hover {
   background: #e64a19;
 }
+
+
+
+    
