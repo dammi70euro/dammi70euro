@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIANGIOTRON</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 2px 2px 5px gray;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .audio-button {
+      width: 100px;
+      height: 100px;
+      border: none;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .control-group label {
+      font-size: 1em;
+    }
+
+    .control-group input[type="range"] {
+      width: 150px;
+    }
+
+    .control-group input[type="checkbox"] {
+      transform: scale(1.5);
+    }
+  </style>
+</head>
+<body>
+  <h1>GIANGIOTRON</h1>
+
+  <div class="button-grid">
+    <button class="audio-button" data-audio="carmine.wav" style="background-image: url('giangiotron/carmine.png');"></button>
+    <button class="audio-button" data-audio="fallo.wav" style="background-image: url('giangiotron/fallo.png');"></button>
+    <button class="audio-button" data-audio="fresco.wav" style="background-image: url('giangiotron/fresco.png');"></button>
+    <button class="audio-button" data-audio="limone.wav" style="background-image: url('giangiotron/limone.png');"></button>
+    <button class="audio-button" data-audio="piezzo.wav" style="background-image: url('giangiotron/piezzo.png');"></button>
+    <button class="audio-button" data-audio="pontos.wav" style="background-image: url('giangiotron/pontos.png');"></button>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="delayCheckbox">Delay:</label>
+      <input type="checkbox" id="delayCheckbox">
+      <input type="range" id="delaySlider" min="0" max="1" step="0.01" value="0.5">
+    </div>
+
+    <div class="control-group">
+      <label for="reverbCheckbox">Reverbero:</label>
+      <input type="checkbox" id="reverbCheckbox">
+      <input type="range" id="reverbSlider" min="0" max="1" step="0.01" value="0.5">
+    </div>
+
+    <div class="control-group">
+      <label for="reverseCheckbox">Reverse:</label>
+      <input type="checkbox" id="reverseCheckbox">
+    </div>
+  </div>
+
+  <script src="giangiotron_script.js"></script>
+</body>
+</html>
