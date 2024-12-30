@@ -59,8 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lfoFilter = audioContext.createOscillator();
     lfoFilterGain = audioContext.createGain();
 
-    oscillator1.type = "sawtooth";
-    oscillator2.type = "square";
+    oscillator1.type = "sine";
+    oscillator2.type = "sine";
     filter.type = "lowpass";
     gainNode.gain.value = 0;
 

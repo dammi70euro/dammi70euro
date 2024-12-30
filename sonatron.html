@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonatron</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0f7fa, #b3e5fc);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .device {
+            background: #e0e0e0;
+            border-radius: 20px;
+            width: 300px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .screen {
+            background: #2196f3;
+            border-radius: 10px;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 10px;
+        }
+
+        .bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+            width: 100%;
+            height: 100%;
+            margin-top: 10px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #81d4fa;
+            border-radius: 2px;
+            transition: height 0.1s;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #1976d2;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            width: 80%;
+        }
+
+        .nav-button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="device">
+        <div class="screen">
+            <h2>Sonatron</h2>
+            <div class="bars" id="bars">
+                <!-- Dynamic bars for decibels -->
+                <div class="bar" style="height: 10%;"></div>
+                <div class="bar" style="height: 20%;"></div>
+                <div class="bar" style="height: 30%;"></div>
+                <div class="bar" style="height: 40%;"></div>
+                <div class="bar" style="height: 50%;"></div>
+                <div class="bar" style="height: 60%;"></div>
+                <div class="bar" style="height: 70%;"></div>
+                <div class="bar" style="height: 80%;"></div>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="button" id="startButton">Start</button>
+            <button class="button" id="stopButton">Stop</button>
+        </div>
+        <button class="button" onclick="window.location.href='index.html'">🛏️ Vai a Letto</button>
+        <div class="navigation">
+            <button class="nav-button">Previous</button>
+            <button class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const bars = document.querySelectorAll('.bar');
+
+        let audioContext;
+        let analyser;
+        let microphone;
+        let animationFrame;
+
+        async function startDecibelMeter() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function updateBars() {
+                analyser.getByteFrequencyData(dataArray);
+                bars.forEach((bar, index) => {
+                    const value = dataArray[index] || 0;
+                    bar.style.height = `${(value / 255) * 100}%`;
+                });
+                animationFrame = requestAnimationFrame(updateBars);
+            }
+
+            updateBars();
+        }
+
+        function stopDecibelMeter() {
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+            if (audioContext) audioContext.close();
+        }
+
+        startButton.addEventListener('click', startDecibelMeter);
+        stopButton.addEventListener('click', stopDecibelMeter);
+    </script>
+</body>
+</html>
