@@ -136,28 +136,6 @@
         let analyser;
         let microphone;
         let animationFrame;
-        const screamThreshold = 180; // Value representing a loud scream
-
-        // Create rotating image for scream detection
-        const screamImage = document.createElement('img');
-        screamImage.src = 'Sonatron.jpg';
-        screamImage.alt = 'Scream Detected';
-        screamImage.style.position = 'fixed';
-        screamImage.style.width = '150px';
-        screamImage.style.height = '150px';
-        screamImage.style.borderRadius = '50%';
-        screamImage.style.animation = 'spin 3s linear infinite';
-        screamImage.style.display = 'none';
-        document.body.appendChild(screamImage);
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
 
         async function startDecibelMeter() {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -171,23 +149,10 @@
 
             function updateBars() {
                 analyser.getByteFrequencyData(dataArray);
-                let maxValue = 0;
-
                 bars.forEach((bar, index) => {
                     const value = dataArray[index] || 0;
                     bar.style.height = `${(value / 255) * 100}%`;
-                    if (value > maxValue) maxValue = value;
                 });
-
-                // Show rotating image if loud scream detected
-                if (maxValue >= screamThreshold) {
-                    screamImage.style.display = 'block';
-                    screamImage.style.top = `${Math.random() * window.innerHeight}px`;
-                    screamImage.style.left = `${Math.random() * window.innerWidth}px`;
-                } else {
-                    screamImage.style.display = 'none';
-                }
-
                 animationFrame = requestAnimationFrame(updateBars);
             }
 
@@ -197,7 +162,6 @@
         function stopDecibelMeter() {
             if (animationFrame) cancelAnimationFrame(animationFrame);
             if (audioContext) audioContext.close();
-            screamImage.style.display = 'none';
         }
 
         startButton.addEventListener('click', startDecibelMeter);
