@@ -1,42 +1,36 @@
-// Lista dei file nella cartella "canzoni"
-// Puoi includere anche file .wav e .mpeg, ma ricorda che il player HTML5 riproduce senza problemi soltanto formati supportati dal browser.
-// Se vuoi assicurarti che tutti i file vengano riprodotti, utilizza formati comuni come .mp3 o .wav.
-const mp3Files = [
-  "alle vene.mp3",
-  "cachorro.mp3",
-  "di-troit (1).mp3",
-  "di-troit.mp3",
-  "facciamo un ragionamento sensato.mp3",
-  "Fast_Drums_Trap_Beat_04_165_BPM_NA.wav",
-  "Fever Ray 'If I Had A Heart' (1) (1).mp3",
-  "Fever Ray 'If I Had A Heart' (1).mp3",
-  "Fever Ray 'If I Had A Heart'.mp3",
-  "frosc%C3%ACo.mp3",
-  "Giochi sull'acqua.mp3",
-  "kenjem.mp3",
-  "lofi.mp3",
-  "mette carne.mp3",
-  "no a letto.mp3",
-  "no.mp3",
-  "non mi sento tanto bene.mp3",
-  "pippaAncheTu.mpeg",
-  "briaco.mp3",
-  "secondo te è meglio andare a prostitute.mp3",
-  "skukk no.wav",
-  "ti garba fumà, eh!.mp3",
-  "una pizza non mi sazia.mp3"
-];
+// API Key di Google (da configurare su Google Cloud Console)
+const API_KEY = 'AIzaSyCsKsvTqnlnDD94CYef0diL_M0jZ4HqjTk';
+const FOLDER_ID = '1JdLjxDa8xNTDYJgUCGLurORSbW0pXUAn';
 
+// Elementi HTML
 const listElement = document.getElementById('mp3-list');
 const player = document.getElementById('player');
 
+// Recupera la lista dei file da Google Drive
+async function fetchMP3Files() {
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${FOLDER_ID}'+in+parents&key=${API_KEY}`);
+    const data = await response.json();
+
+    if (data.files && data.files.length > 0) {
+      const audioFiles = data.files.filter(file => file.mimeType === 'audio/mpeg' || file.mimeType === 'audio/wav');
+      createMP3List(audioFiles);
+    } else {
+      console.error('Nessun file trovato nella cartella.');
+    }
+  } catch (error) {
+    console.error('Errore durante il recupero dei file:', error);
+  }
+}
+
+// Crea la lista di file audio
 function createMP3List(files) {
   files.forEach(file => {
     const li = document.createElement('li');
     
     // Titolo della canzone
     const spanTitle = document.createElement('span');
-    spanTitle.textContent = file;
+    spanTitle.textContent = file.name;
     spanTitle.classList.add('song-title');
 
     // Pulsante Play
@@ -49,7 +43,7 @@ function createMP3List(files) {
       if (current) current.classList.remove('playing');
 
       // Imposta la fonte dell'audio e riproduce
-      player.src = 'canzoni/' + file;
+      player.src = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
       player.play();
 
       // Evidenzia il brano in riproduzione
@@ -62,5 +56,5 @@ function createMP3List(files) {
   });
 }
 
-// Creazione della lista all'avvio
-createMP3List(mp3Files);
+// Avvia il recupero dei file all'avvio
+fetchMP3Files();
