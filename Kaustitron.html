@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaustitron 💊</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #4b0000);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #ffffff;
+        }
+        .banner {
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        .banner img {
+            max-width: 100%;
+            height: auto;
+        }
+        .synth {
+            background: linear-gradient(145deg, #2e2e2e, #550000);
+            border-radius: 15px;
+            padding: 20px;
+            width: 750px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+        }
+        .synth .section {
+            background: linear-gradient(145deg, #3a3a3a, #770000);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .synth .section label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .keyboard {
+            grid-column: span 4;
+            display: flex;
+            justify-content: space-around;
+        }
+        .keyboard button {
+            background: linear-gradient(145deg, #1e1e1e, #4b0000);
+            border: 1px solid #770000;
+            padding: 15px;
+            flex: 1;
+            margin: 2px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .keyboard button:hover {
+            background: linear-gradient(145deg, #550000, #770000);
+        }
+        .octave-controls {
+            grid-column: span 4;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .octave-controls button {
+            background: linear-gradient(145deg, #1e1e1e, #4b0000);
+            border: 1px solid #770000;
+            padding: 10px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .octave-controls button:hover {
+            background: linear-gradient(145deg, #550000, #770000);
+        }
+        .title {
+            grid-column: span 4;
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+        }
+		 .return-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .return-link a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #1e1e1e, #4b0000);
+            border: 1px solid #770000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: inline-block;
+        }
+        .return-link a:hover {
+            background: linear-gradient(145deg, #550000, #770000);
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <img src="kausttron.png" alt="Kaustitron Banner">
+    </div>
+    <div class="synth">
+        
+        <!-- Oscillator 1 -->
+        <div class="section">
+            <h3>Oscillator 1</h3>
+            <label>
+                Mix: <input type="range" min="0" max="100" value="50" id="osc1-mix">
+            </label>
+            <label>
+                FM: <input type="checkbox" id="osc1-fm">
+            </label>
+        </div>
+        
+        <!-- Oscillator 2 -->
+        <div class="section">
+            <h3>Oscillator 2</h3>
+            <label>
+                Phase: <input type="range" min="0" max="360" value="180" id="osc2-phase">
+            </label>
+            <label>
+                Octave: <input type="number" min="-2" max="2" value="0" id="osc2-octave">
+            </label>
+            <label>
+                Semitones: <input type="number" min="-12" max="12" value="0" id="osc2-semitones">
+            </label>
+        </div>
+
+        <!-- Filter -->
+        <div class="section">
+            <h3>Filter</h3>
+            <label>
+                Cutoff: <input type="range" min="20" max="20000" value="5000" id="filter-cutoff">
+            </label>
+            <label>
+                Resonance: <input type="range" min="0" max="100" value="50" id="filter-resonance">
+            </label>
+        </div>
+
+        <!-- Envelope -->
+        <div class="section">
+            <h3>Envelope</h3>
+            <label>
+                Attack: <input type="range" min="0" max="1" step="0.01" value="0.1" id="env-attack">
+            </label>
+            <label>
+                Decay: <input type="range" min="0" max="1" step="0.01" value="0.3" id="env-decay">
+            </label>
+            <label>
+                Sustain: <input type="range" min="0" max="1" step="0.01" value="0.7" id="env-sustain">
+            </label>
+            <label>
+                Release: <input type="range" min="0" max="1" step="0.01" value="0.5" id="env-release">
+            </label>
+        </div>
+
+        <!-- Keyboard -->
+        <div class="keyboard">
+            <button data-note="C4">C</button>
+            <button data-note="D4">D</button>
+            <button data-note="E4">E</button>
+            <button data-note="F4">F</button>
+            <button data-note="G4">G</button>
+            <button data-note="A4">A</button>
+            <button data-note="B4">B</button>
+            <button data-note="C5">C</button>
+        </div>
+
+        <!-- Octave Controls -->
+        <div class="octave-controls">
+            <button id="octave-up">Octave Up</button>
+            <button id="octave-down">Octave Down</button>
+        </div>
+		<div class="return-link">
+        <a href="index.html">Vai a letto</a>
+    </div>
+    </div>
+
+    <script>
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+
+        const noteFreq = {
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+            'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25
+        };
+
+        let currentOctaveShift = 0;
+
+        const keyMap = {
+            'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4',
+            'g': 'G4', 'h': 'A4', 'j': 'B4', 'k': 'C5'
+        };
+
+        const activeOscillators = {};
+
+        function adjustOctave(note) {
+            const baseFrequency = noteFreq[note];
+            return baseFrequency * Math.pow(2, currentOctaveShift);
+        }
+
+        function playNoteStart(note) {
+            if (activeOscillators[note]) return;
+
+            const oscillator = context.createOscillator();
+            const gainNode = context.createGain();
+            const filter = context.createBiquadFilter();
+
+            // Apply oscillator type and frequency adjustments
+            const osc1Mix = parseFloat(document.getElementById('osc1-mix').value) / 100;
+            const osc2Phase = parseFloat(document.getElementById('osc2-phase').value);
+            const osc2Octave = parseInt(document.getElementById('osc2-octave').value);
+            const osc2Semitones = parseInt(document.getElementById('osc2-semitones').value);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.value = adjustOctave(note) * Math.pow(2, osc2Octave) * Math.pow(2, osc2Semitones / 12);
+
+            const cutoff = document.getElementById('filter-cutoff').value;
+            const resonance = document.getElementById('filter-resonance').value;
+
+            filter.type = 'lowpass';
+            filter.frequency.value = cutoff;
+            filter.Q.value = resonance;
+
+            // Apply envelope
+            const attack = parseFloat(document.getElementById('env-attack').value);
+            const decay = parseFloat(document.getElementById('env-decay').value);
+            const sustain = parseFloat(document.getElementById('env-sustain').value);
+            const release = parseFloat(document.getElementById('env-release').value);
+
+            gainNode.gain.setValueAtTime(0, context.currentTime);
+            gainNode.gain.linearRampToValueAtTime(osc1Mix, context.currentTime + attack);
+            gainNode.gain.linearRampToValueAtTime(sustain * osc1Mix, context.currentTime + attack + decay);
+
+            oscillator.connect(filter).connect(gainNode).connect(context.destination);
+            oscillator.start();
+
+            activeOscillators[note] = { oscillator, gainNode, release };
+        }
+
+        function playNoteStop(note) {
+            if (!activeOscillators[note]) return;
+
+            const { oscillator, gainNode, release } = activeOscillators[note];
+            gainNode.gain.setTargetAtTime(0, context.currentTime, release);
+
+            setTimeout(() => {
+                oscillator.stop();
+                delete activeOscillators[note];
+            }, release * 1000);
+        }
+
+        document.querySelectorAll('.keyboard button').forEach(button => {
+            button.addEventListener('mousedown', () => playNoteStart(button.dataset.note));
+            button.addEventListener('mouseup', () => playNoteStop(button.dataset.note));
+        });
+
+        document.addEventListener('keydown', (event) => {
+            const note = keyMap[event.key];
+            if (note) playNoteStart(note);
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const note = keyMap[event.key];
+            if (note) playNoteStop(note);
+        });
+
+        document.getElementById('octave-up').addEventListener('click', () => {
+            currentOctaveShift = Math.min(currentOctaveShift + 1, 2);
+        });
+
+        document.getElementById('octave-down').addEventListener('click', () => {
+            currentOctaveShift = Math.max(currentOctaveShift - 1, -2);
+        });
+    </script>
+</body>
+</html>
