@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥁💊 Drammatron</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: url('drummatron.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+    }
+
+    .drummatron {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 20px;
+      text-align: center;
+    }
+
+    .pad {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(145deg, #4e69ff, #2c2f78);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .pad.active {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(255, 255, 255, 0.6);
+    }
+
+    .header {
+      position: absolute;
+      top: 10%;
+      width: 100%;
+      text-align: center;
+      font-size: 4rem;
+      font-weight: bold;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+      animation: blink 1s infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 10%;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .back-button {
+      position: absolute;
+      top: 5%;
+      right: 5%;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ff0055, #55002a);
+      color: white;
+      font-size: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: transform 0.5s ease, background 1.5s ease;
+      animation: colorChange 4s infinite;
+    }
+
+    .back-button:hover {
+      transform: rotate(360deg);
+      box-shadow: 0 6px 12px rgba(255, 255, 255, 0.6);
+    }
+
+    @keyframes colorChange {
+      0% { background: linear-gradient(145deg, #ff0055, #55002a); }
+      25% { background: linear-gradient(145deg, #00ff55, #002a55); }
+      50% { background: linear-gradient(145deg, #5500ff, #2a0055); }
+      75% { background: linear-gradient(145deg, #ffff00, #555500); }
+      100% { background: linear-gradient(145deg, #ff0055, #55002a); }
+    }
+
+    .note {
+      position: absolute;
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      animation: float 5s linear infinite;
+    }
+
+    @keyframes float {
+      from { transform: translateY(100vh); opacity: 0; }
+      to { transform: translateY(-10%); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">🥁💊 Drammatron</div>
+
+  <div class="drummatron">
+    <div class="pad" data-key="Q">Q</div>
+    <div class="pad" data-key="W">W</div>
+    <div class="pad" data-key="E">E</div>
+    <div class="pad" data-key="A">A</div>
+    <div class="pad" data-key="S">S</div>
+    <div class="pad" data-key="D">D</div>
+    <div class="pad" data-key="Z">Z</div>
+    <div class="pad" data-key="X">X</div>
+    <div class="pad" data-key="C">C</div>
+  </div>
+
+  <div class="footer">Powered by the Drummatron Engine</div>
+
+  <div class="back-button" onclick="window.location.href='index.html';">Vai a letto ↩</div>
+
+  <script>
+    // Random notes appearing on the screen
+    const messages = ['Groove!', 'Rock on!', 'Feel the Beat!', 'Bam!', 'Hit it!'];
+
+    function createNote() {
+      const note = document.createElement('div');
+      note.classList.add('note');
+      note.textContent = messages[Math.floor(Math.random() * messages.length)];
+      note.style.left = Math.random() * window.innerWidth + 'px';
+      note.style.top = window.innerHeight + 'px';
+      document.body.appendChild(note);
+
+      setTimeout(() => {
+        document.body.removeChild(note);
+      }, 5000);
+    }
+
+    setInterval(createNote, 1000);
+  </script>
+  <script src="drummatron.js"></script>
+</body>
+</html>
