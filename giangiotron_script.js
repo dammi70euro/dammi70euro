@@ -55,6 +55,9 @@ function createMP3List(audioFiles, imageFiles) {
             // Se non c'è immagine, mostra il nome del file (senza estensione)
             const fileNameWithoutExtension = file.name.split('.')[0];
             button.textContent = fileNameWithoutExtension;
+
+            // Imposta un colore di sfondo randomico
+            button.style.backgroundColor = getRandomColor();
         }
 
         // Aggiungi un evento per riprodurre l'audio quando il bottone è cliccato
@@ -69,6 +72,16 @@ function createMP3List(audioFiles, imageFiles) {
 function playAudio(audioUrl) {
     const audio = new Audio(audioUrl);
     audio.play().catch(error => console.error('Errore nella riproduzione audio:', error));
+}
+
+// Funzione per generare un colore randomico
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
 }
 
 // Carica i file audio quando la pagina è pronta
