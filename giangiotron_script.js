@@ -46,12 +46,15 @@ function createMP3List(audioFiles, imageFiles) {
         // Crea il bottone
         const button = document.createElement('button');
         button.className = 'audio-button'; // Puoi aggiungere uno stile personalizzato
-        button.textContent = file.name; // Mostra il nome del file come testo del bottone
 
-        // Imposta l'immagine di sfondo se disponibile
+        // Se esiste l'immagine, imposta come sfondo e non mostra il testo
         if (imageUrl) {
             button.style.backgroundImage = `url(${imageUrl})`;
             button.style.backgroundSize = 'cover'; // Imposta la dimensione dell'immagine di sfondo
+        } else {
+            // Se non c'è immagine, mostra il nome del file (senza estensione)
+            const fileNameWithoutExtension = file.name.split('.')[0];
+            button.textContent = fileNameWithoutExtension;
         }
 
         // Aggiungi un evento per riprodurre l'audio quando il bottone è cliccato
