@@ -116,8 +116,6 @@
                 <div class="bar" style="height: 80%;"></div>
             </div>
         </div>
-		<!-- Testo che cambia -->
-<div id="message" class="message">Bassi Buoni</div>
         <div class="controls">
             <button class="button" id="startButton">Start</button>
             <button class="button" id="stopButton">Stop</button>
@@ -130,10 +128,6 @@
     </div>
 
     <script>
-	
-		
-	
-	
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
         const bars = document.querySelectorAll('.bar');
@@ -172,37 +166,6 @@
 
         startButton.addEventListener('click', startDecibelMeter);
         stopButton.addEventListener('click', stopDecibelMeter);
-		
-		
-		
-		 // Seleziona il slider e il messaggio
-  const slider = document.getElementById('slider');
-  const message = document.getElementById('message');
-
-  // Funzione per aggiornare il messaggio
-  function updateMessage() {
-    const value = slider.value;
-
-    if (value == 0) {
-      message.textContent = 'Bassi Buoni';
-      message.style.color = '#4CAF50'; // Verde per i bassi buoni
-      message.classList.add('rotate');
-    } else if (value == 100) {
-      message.textContent = 'Bassi CATTIVI';
-      message.style.color = '#FF0000'; // Rosso per i bassi cattivi
-      message.classList.add('rotate');
-    } else {
-      message.textContent = '';
-      message.classList.remove('rotate');
-    }
-  }
-
-  // Aggiungi un listener per l'evento input dello slider
-  slider.addEventListener('input', updateMessage);
-
-  // Chiamata iniziale per l'aggiornamento del messaggio
-  updateMessage();
-		
     </script>
 </body>
 </html>
