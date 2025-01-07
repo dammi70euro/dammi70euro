@@ -95,24 +95,30 @@ audio {
   z-index: 10;
 }
 
-.big-button {
-  display: block;
-  margin: 30px auto;
-  width: 200px;
-  height: 60px;
-  background: #ff5722;
-  color: #ffffff;
-  font-size: 1.2em;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: center;
-  line-height: 60px;
-  text-decoration: none;
-  position: relative;
-  z-index: 10;
-}
+.buttons-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3 colonne */
+      gap: 20px; /* Spazio tra i bottoni */
+      margin-top: 20px;
+    }
+
+    .big-button {
+      display: block;
+      padding: 15px;
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+    }
+
+    .big-button:hover {
+      background-color: #45a049;
+    }
+\
 
 .giangiotron-button {
     width: 150px;

@@ -3,7 +3,7 @@ const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 // Drum sound mappings for keys
 const drumSounds = {
-  Q: { type: "triangle", frequency: 150, decay: 0.1 }, // Kick drum
+  Q: { type: "triangle", frequency: 80, decay: 0.1 }, // Kick drum
   W: { type: "square", frequency: 200, decay: 0.05 }, // Snare drum
   E: { type: "sine", frequency: 400, decay: 0.05 },  // Hi-hat
   A: { type: "triangle", frequency: 100, decay: 0.15 }, // Low tom
