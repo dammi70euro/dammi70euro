@@ -24,7 +24,8 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
         }
 
         .screen {
@@ -38,6 +39,7 @@
             align-items: center;
             color: white;
             padding: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .bars {
@@ -59,7 +61,10 @@
         .controls {
             margin-top: 20px;
             display: flex;
-            gap: 10px;
+            gap: 20px;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
         }
 
         .button {
@@ -67,36 +72,20 @@
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             transition: background 0.3s;
+            width: 80%;
         }
 
         .button:hover {
             background: #1976d2;
         }
 
-        .navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            width: 80%;
-        }
-
-        .nav-button {
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-
-        .nav-button:hover {
-            background: #1976d2;
+        .button:focus {
+            outline: none;
+            box-shadow: 0 0 10px #2196f3;
         }
 
         .message {
@@ -104,6 +93,7 @@
             font-weight: bold;
             text-align: center;
             transition: transform 0.5s ease, font-size 0.3s, color 0.3s;
+            margin-bottom: 20px;
         }
 
         .warning {
@@ -158,11 +148,6 @@
         </div>
 
         <button class="button" onclick="window.location.href='index.html'">🛏️ Vai a Letto</button>
-
-        <div class="navigation">
-            <button class="nav-button">Previous</button>
-            <button class="nav-button">Next</button>
-        </div>
     </div>
 
     <script>
