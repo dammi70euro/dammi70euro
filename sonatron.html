@@ -19,7 +19,7 @@
             background: #e0e0e0;
             border-radius: 20px;
             width: 300px;
-            height: 600px;
+            height: 650px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -130,6 +130,23 @@
             75% { transform: translateX(-10px); }
             100% { transform: translateX(0); }
         }
+
+        /* Style per gli slider */
+        .slider-container {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .slider {
+            width: 100%;
+        }
+
+        .slider-label {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -163,6 +180,13 @@
             <button class="nav-button">Previous</button>
             <button class="nav-button">Next</button>
         </div>
+
+        <!-- Slider per sensibilità Bassi Cattivi -->
+        <div class="slider-container">
+            <div class="slider-label">Bassi Cattivi Sensibilità</div>
+            <input type="range" id="badBassSlider" class="slider" min="40" max="100" value="60">
+        </div>
+
     </div>
 
     <script>
@@ -170,6 +194,7 @@
         const stopButton = document.getElementById('stopButton');
         const bars = document.querySelectorAll('.bar');
         const message = document.getElementById('message');
+        const badBassSlider = document.getElementById('badBassSlider');  // Slider per sensibilità bassi cattivi
 
         let audioContext;
         let analyser;
@@ -208,14 +233,16 @@
 
         // Funzione per aggiornare il messaggio in base al valore
         function updateMessage(value) {
-            if (value >= 0 && value <= 20) {
-                message.textContent = '';
-            } else if (value > 20 && value <= 60) {
+            const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
+
+            if (value >= 0 && value <= 40) {
+                message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
+            } else if (value > 40 && value <= 60) {
                 message.textContent = 'Bassi Buoni';
                 message.classList.remove('warning', 'expand');
                 message.classList.add('expand');
                 message.style.color = '#4CAF50'; // Verde per i bassi buoni
-            } else if (value > 60 && value <= 100) {
+            } else if (value > badBassThreshold) {
                 message.textContent = '⚠️ BASSI CATTIVI ⚠️';
                 message.classList.add('warning', 'expand');
                 message.style.color = '#FF0000'; // Rosso per i bassi cattivi
