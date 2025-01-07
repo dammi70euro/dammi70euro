@@ -1,136 +1,88 @@
-// Funzione per inizializzare il Giangiotron
-function initGiangiotron() {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const buttonGrid = document.getElementById('button-grid');
+// Definisci la tua API key e l'ID della cartella
+const apiKey = 'AIzaSyCsKsvTqnlnDD94CYef0diL_M0jZ4HqjTk';
+const folderId = '1xrP5sDeeo5-iWzFWoQoIFuOTvKnhPntd';
 
-    // Effetti
-    const delay = audioContext.createDelay(5.0); // Massimo ritardo di 5 secondi
-    const delayFeedback = audioContext.createGain();
-    delay.connect(delayFeedback);
-    delayFeedback.connect(delay);
+// Funzione per caricare i file audio e le immagini dalla cartella
+async function fetchMP3Files() {
+    try {
+        // Richiedi i file dalla cartella usando l'API di Google Drive
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${apiKey}&fields=files(id,name,mimeType)`);
+        const data = await response.json();
 
-    const convolver = audioContext.createConvolver(); // Reverbero
+        // Verifica se ci sono file
+        if (data.files && data.files.length > 0) {
+            // Filtra i file audio MP3 e WAV e le immagini PNG
+            const audioFiles = data.files.filter(file => file.mimeType === 'audio/mpeg' || file.mimeType === 'audio/wav');
+            const imageFiles = data.files.filter(file => file.mimeType === 'image/png');
 
-    const gainNode = audioContext.createGain(); // Gain finale
-    gainNode.gain.value = 0.5;
-
-    // Controlli degli effetti
-    const delayCheckbox = document.getElementById('delayCheckbox');
-    const delaySlider = document.getElementById('delaySlider');
-
-    const reverbCheckbox = document.getElementById('reverbCheckbox');
-    const reverbSlider = document.getElementById('reverbSlider');
-
-    const reverseCheckbox = document.getElementById('reverseCheckbox');
-
-    // Funzione per generare un buffer per il reverbero
-    function createReverbBuffer(decay = 2) {
-        const sampleRate = audioContext.sampleRate;
-        const length = sampleRate * decay;
-        const impulse = audioContext.createBuffer(2, length, sampleRate);
-        for (let channel = 0; channel < impulse.numberOfChannels; channel++) {
-            const impulseData = impulse.getChannelData(channel);
-            for (let i = 0; i < length; i++) {
-                impulseData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
-            }
+            // Crea i bottoni per ciascun file audio e associa l'immagine come sfondo
+            createMP3List(audioFiles, imageFiles);
+        } else {
+            console.error('Nessun file trovato nella cartella.');
         }
-        return impulse;
+    } catch (error) {
+        console.error('Errore durante il recupero dei file:', error);
     }
+}
 
-    // Aggiorna il buffer del reverbero
-    reverbSlider.addEventListener('input', () => {
-        convolver.buffer = createReverbBuffer(parseFloat(reverbSlider.value));
-    });
-    convolver.buffer = createReverbBuffer(parseFloat(reverbSlider.value));
+// Funzione per creare i bottoni con i file audio e l'immagine di sfondo
+function createMP3List(audioFiles, imageFiles) {
+    const buttonGrid = document.getElementById('button-grid'); // Assicurati che esista un elemento con id "button-grid"
 
-    // Configurazione degli effetti
-    delay.delayTime.value = 0.5; // Default ritardo
-    delayFeedback.gain.value = 0.5; // Default feedback
+    // Pulisci la griglia esistente prima di aggiungere nuovi bottoni
+    buttonGrid.innerHTML = '';
 
-    // Funzione per riprodurre audio
-    function playAudio(fileUrl) {
-        const audioElement = new Audio(fileUrl);
-        audioElement.crossOrigin = 'anonymous';
+    // Aggiungi un bottone per ogni file audio trovato
+    audioFiles.forEach(file => {
+        // Trova l'immagine associata (assumiamo che l'immagine abbia lo stesso nome del file audio)
+        const imageFile = imageFiles.find(imgFile => imgFile.name.split('.')[0] === file.name.split('.')[0]);
 
-        const track = audioContext.createMediaElementSource(audioElement);
+        // URL per il file audio
+        const audioUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${apiKey}`;
 
-        // Connessioni degli effetti
-        track.connect(gainNode);
+        // URL per l'immagine di sfondo
+        const imageUrl = imageFile ? `https://www.googleapis.com/drive/v3/files/${imageFile.id}?alt=media&key=${apiKey}` : '';
 
-        if (delayCheckbox.checked) {
-            gainNode.connect(delay);
-            delay.connect(audioContext.destination);
-        }
-        if (reverbCheckbox.checked) {
-            gainNode.connect(convolver);
-            convolver.connect(audioContext.destination);
+        // Crea il bottone
+        const button = document.createElement('button');
+        button.className = 'audio-button'; // Puoi aggiungere uno stile personalizzato
+
+        // Se esiste l'immagine, imposta come sfondo e non mostra il testo
+        if (imageUrl) {
+            button.style.backgroundImage = `url(${imageUrl})`;
+            button.style.backgroundSize = 'cover'; // Imposta la dimensione dell'immagine di sfondo
+        } else {
+            // Se non c'è immagine, mostra il nome del file (senza estensione)
+            const fileNameWithoutExtension = file.name.split('.')[0];
+            button.textContent = fileNameWithoutExtension;
+
+            // Imposta un colore di sfondo randomico
+            button.style.backgroundColor = getRandomColor();
         }
 
-        gainNode.connect(audioContext.destination);
+        // Aggiungi un evento per riprodurre l'audio quando il bottone è cliccato
+        button.addEventListener('click', () => playAudio(audioUrl));
 
-        audioElement.play();
-    }
-
-    // Funzione per caricare i file da Google Drive e generare pulsanti dinamicamente
-    function loadDriveFiles() {
-        const folderId = '1xrP5sDeeo5-iWzFWoQoIFuOTvKnhPntd'; // Sostituisci con l'ID della cartella di Google Drive
-
-        gapi.client.drive.files.list({
-            q: `'${folderId}' in parents and (mimeType='audio/mpeg' or mimeType='image/png')`,
-            fields: 'files(id, name, mimeType)',
-        }).then(response => {
-            const files = response.result.files;
-            const audioFiles = {};
-
-            // Organizza i file per nome base
-            files.forEach(file => {
-                const fileType = file.mimeType;
-                const fileName = file.name;
-                const baseName = fileName.split('.')[0];
-
-                if (fileType === 'audio/mpeg') {
-                    audioFiles[baseName] = audioFiles[baseName] || {};
-                    audioFiles[baseName].audio = file.id;
-                } else if (fileType === 'image/png') {
-                    audioFiles[baseName] = audioFiles[baseName] || {};
-                    audioFiles[baseName].image = file.id;
-                }
-            });
-
-            // Crea i pulsanti
-            Object.keys(audioFiles).forEach(baseName => {
-                const { audio, image } = audioFiles[baseName];
-                if (audio && image) {
-                    const button = document.createElement('button');
-                    button.className = 'audio-button';
-                    button.style.backgroundImage = `url(https://drive.google.com/uc?id=${image})`;
-                    button.dataset.audio = `https://drive.google.com/uc?id=${audio}`;
-                    button.addEventListener('click', () => playAudio(button.dataset.audio));
-                    buttonGrid.appendChild(button);
-                }
-            });
-        }).catch(error => console.error('Errore nel recupero dei file:', error));
-    }
-
-    // Carica i file dopo che l'utente ha autenticato l'accesso a Google Drive
-    gapi.load('client:auth2', () => {
-        gapi.client.init({
-            apiKey: 'YOUR_API_KEY', // Sostituisci con la tua API Key
-            clientId: 'YOUR_CLIENT_ID', // Sostituisci con il tuo Client ID
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-            scope: 'https://www.googleapis.com/auth/drive.readonly',
-        }).then(() => {
-            return gapi.auth2.getAuthInstance().signIn();
-        }).then(() => {
-            loadDriveFiles();
-        }).catch(error => console.error('Errore nell'inizializzazione:', error));
-    });
-
-    // Eventi per controlli degli effetti
-    delaySlider.addEventListener('input', () => {
-        delayFeedback.gain.value = parseFloat(delaySlider.value);
+        // Aggiungi il bottone alla griglia
+        buttonGrid.appendChild(button);
     });
 }
 
-// Inizializza il Giangiotron al caricamento della pagina
-document.addEventListener('DOMContentLoaded', initGiangiotron);
+// Funzione per riprodurre il file audio
+function playAudio(audioUrl) {
+    const audio = new Audio(audioUrl);
+    audio.play().catch(error => console.error('Errore nella riproduzione audio:', error));
+}
+
+// Funzione per generare un colore randomico
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+// Carica i file audio quando la pagina è pronta
+document.addEventListener('DOMContentLoaded', fetchMP3Files);
