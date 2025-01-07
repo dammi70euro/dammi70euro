@@ -98,6 +98,38 @@
         .nav-button:hover {
             background: #1976d2;
         }
+
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            transition: transform 0.5s ease, font-size 0.3s, color 0.3s;
+        }
+
+        .warning {
+            font-size: 28px;
+            color: #FF0000;
+            font-weight: bold;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        .expand {
+            animation: expand 0.5s ease-in-out;
+        }
+
+        @keyframes expand {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
     </style>
 </head>
 <body>
@@ -116,11 +148,17 @@
                 <div class="bar" style="height: 80%;"></div>
             </div>
         </div>
+
+        <!-- Testo che cambia dinamicamente -->
+        <div id="message" class="message">Bassi Buoni</div>
+
         <div class="controls">
             <button class="button" id="startButton">Start</button>
             <button class="button" id="stopButton">Stop</button>
         </div>
+
         <button class="button" onclick="window.location.href='index.html'">🛏️ Vai a Letto</button>
+
         <div class="navigation">
             <button class="nav-button">Previous</button>
             <button class="nav-button">Next</button>
@@ -131,6 +169,7 @@
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
         const bars = document.querySelectorAll('.bar');
+        const message = document.getElementById('message');
 
         let audioContext;
         let analyser;
@@ -166,6 +205,30 @@
 
         startButton.addEventListener('click', startDecibelMeter);
         stopButton.addEventListener('click', stopDecibelMeter);
+
+        // Funzione per aggiornare il messaggio in base al valore
+        function updateMessage(value) {
+            if (value >= 0 && value <= 20) {
+                message.textContent = '';
+            } else if (value > 20 && value <= 60) {
+                message.textContent = 'Bassi Buoni';
+                message.classList.remove('warning', 'expand');
+                message.classList.add('expand');
+                message.style.color = '#4CAF50'; // Verde per i bassi buoni
+            } else if (value > 60 && value <= 100) {
+                message.textContent = '⚠️ BASSI CATTIVI ⚠️';
+                message.classList.add('warning', 'expand');
+                message.style.color = '#FF0000'; // Rosso per i bassi cattivi
+            }
+        }
+
+        // Inizializzazione del valore e gestione
+        let value = 0;
+        setInterval(() => {
+            value = Math.random() * 100; // Simuliamo il valore da 0 a 100
+            updateMessage(value);
+        }, 1000); // Aggiorna il messaggio ogni secondo
+
     </script>
 </body>
 </html>
