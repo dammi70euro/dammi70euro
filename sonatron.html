@@ -210,75 +210,80 @@
     </div>
 
     <script>
-        const startButton = document.getElementById('startButton');
-        const stopButton = document.getElementById('stopButton');
-        const bars = document.querySelectorAll('.bar');
-        const message = document.getElementById('message');
-        const badBassSlider = document.getElementById('badBassSlider');  // Slider per sensibilità bassi cattivi
-        const decibelValue = document.getElementById('decibelValue');  // Quadrato per il valore decibel
+	const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const bars = document.querySelectorAll('.bar');
+const message = document.getElementById('message');
+const badBassSlider = document.getElementById('badBassSlider');  // Slider per sensibilità bassi cattivi
+const decibelValue = document.getElementById('decibelValue');  // Quadrato per il valore decibel
 
-        let audioContext;
-        let analyser;
-        let microphone;
-        let animationFrame;
+let audioContext;
+let analyser;
+let microphone;
+let animationFrame;
 
-        async function startDecibelMeter() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            microphone = audioContext.createMediaStreamSource(stream);
-            microphone.connect(analyser);
+// Funzione per inizializzare il misuratore di decibel
+async function startDecibelMeter() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;  // Impostazione della dimensione dell'analizzatore
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
 
-            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-            function updateBars() {
-                analyser.getByteFrequencyData(dataArray);
-                bars.forEach((bar, index) => {
-                    const value = dataArray[index] || 0;
-                    bar.style.height = `${(value / 255) * 100}%`;
-                });
-                animationFrame = requestAnimationFrame(updateBars);
-            }
+    function updateBars() {
+        analyser.getByteFrequencyData(dataArray);
+        bars.forEach((bar, index) => {
+            const value = dataArray[index] || 0;
+            bar.style.height = `${(value / 255) * 100}%`;
+        });
+        
+        // Recupera il valore medio dal microfono (decibel)
+        let sum = 0;
+        dataArray.forEach(value => sum += value);
+        const average = sum / dataArray.length;
 
-            updateBars();
-        }
+        // Imposta il valore per la visualizzazione
+        updateMessage(average); // Passiamo il valore medio per aggiornare il messaggio
 
-        function stopDecibelMeter() {
-            if (animationFrame) cancelAnimationFrame(animationFrame);
-            if (audioContext) audioContext.close();
-        }
+        animationFrame = requestAnimationFrame(updateBars); // Continua l'animazione
+    }
 
-        startButton.addEventListener('click', startDecibelMeter);
-        stopButton.addEventListener('click', stopDecibelMeter);
+    updateBars(); // Inizia l'aggiornamento dei dati
+}
 
-        // Funzione per aggiornare il messaggio e il valore decibel in tempo reale
-        function updateMessage(value) {
-            const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
+// Funzione per fermare il misuratore di decibel
+function stopDecibelMeter() {
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+    if (audioContext) audioContext.close();
+}
 
-            if (value >= 0 && value <= 40) {
-                message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
-            } else if (value > 40 && value <= 60) {
-                message.textContent = 'Bassi Buoni';
-                message.classList.remove('warning', 'expand');
-                message.classList.add('expand');
-                message.style.color = '#4CAF50'; // Verde per i bassi buoni
-            } else if (value > badBassThreshold) {
-                message.textContent = '⚠️ BASSI CATTIVI ⚠️';
-                message.classList.add('warning', 'expand');
-                message.style.color = '#FF0000'; // Rosso per i bassi cattivi
-            }
+startButton.addEventListener('click', startDecibelMeter);
+stopButton.addEventListener('click', stopDecibelMeter);
 
-            // Aggiorna il valore nel quadrato
-            decibelValue.textContent = Math.floor(value);
-        }
+// Funzione per aggiornare il messaggio e il valore decibel in tempo reale
+function updateMessage(value) {
+    const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
 
-        // Inizializzazione del valore e gestione
-        let value = 0;
-        setInterval(() => {
-            value = Math.random() * 100; // Simuliamo il valore da 0 a 100
-            updateMessage(value);
-        }, 1000); // Aggiorna il messaggio e il valore ogni secondo
+    if (value >= 0 && value <= 40) {
+        message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
+    } else if (value > 40 && value <= 60) {
+        message.textContent = 'Bassi Buoni';
+        message.classList.remove('warning', 'expand');
+        message.classList.add('expand');
+        message.style.color = '#4CAF50'; // Verde per i bassi buoni
+    } else if (value > badBassThreshold) {
+        message.textContent = '⚠️ BASSI CATTIVI ⚠️';
+        message.classList.add('warning', 'expand');
+        message.style.color = '#FF0000'; // Rosso per i bassi cattivi
+    }
+
+    // Aggiorna il valore nel quadrato
+    decibelValue.textContent = Math.floor(value); // Visualizza il valore decibel nel quadrato
+}
+
 
     </script>
 </body>
