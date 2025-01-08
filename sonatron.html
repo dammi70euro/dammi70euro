@@ -147,6 +147,23 @@
             text-align: center;
             margin-bottom: 10px;
         }
+
+        /* Quadrato per il valore decibel */
+        .value-box {
+            background-color: #ffeb3b;
+            color: #212121;
+            font-size: 24px;
+            font-weight: bold;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
     </style>
 </head>
 <body>
@@ -168,6 +185,9 @@
 
         <!-- Testo che cambia dinamicamente -->
         <div id="message" class="message">Bassi Buoni</div>
+
+        <!-- Quadrato per il valore decibel -->
+        <div id="decibelValue" class="value-box">0</div>
 
         <div class="controls">
             <button class="button" id="startButton">Start</button>
@@ -195,6 +215,7 @@
         const bars = document.querySelectorAll('.bar');
         const message = document.getElementById('message');
         const badBassSlider = document.getElementById('badBassSlider');  // Slider per sensibilità bassi cattivi
+        const decibelValue = document.getElementById('decibelValue');  // Quadrato per il valore decibel
 
         let audioContext;
         let analyser;
@@ -231,7 +252,7 @@
         startButton.addEventListener('click', startDecibelMeter);
         stopButton.addEventListener('click', stopDecibelMeter);
 
-        // Funzione per aggiornare il messaggio in base al valore
+        // Funzione per aggiornare il messaggio e il valore decibel in tempo reale
         function updateMessage(value) {
             const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
 
@@ -247,6 +268,9 @@
                 message.classList.add('warning', 'expand');
                 message.style.color = '#FF0000'; // Rosso per i bassi cattivi
             }
+
+            // Aggiorna il valore nel quadrato
+            decibelValue.textContent = Math.floor(value);
         }
 
         // Inizializzazione del valore e gestione
@@ -254,7 +278,7 @@
         setInterval(() => {
             value = Math.random() * 100; // Simuliamo il valore da 0 a 100
             updateMessage(value);
-        }, 1000); // Aggiorna il messaggio ogni secondo
+        }, 1000); // Aggiorna il messaggio e il valore ogni secondo
 
     </script>
 </body>
