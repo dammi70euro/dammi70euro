@@ -204,7 +204,7 @@
         <!-- Slider per sensibilità Bassi Cattivi -->
         <div class="slider-container">
             <div class="slider-label">Bassi Cattivi Sensibilità</div>
-            <input type="range" id="badBassSlider" class="slider" min="40" max="70" value="40">
+            <input type="range" id="badBassSlider" class="slider" min="20" max="70" value="110">
         </div>
 
     </div>
@@ -269,7 +269,7 @@ function updateMessage(value) {
 
     if (value >= 0 && value <= 10) {
         message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
-    } else if (value > 10 && value <= 40) {
+    } else if (value > 10 && value <= badBassThreshold) {
         message.textContent = 'Bassi Buoni';
         message.classList.remove('warning', 'expand');
         message.classList.add('expand');
