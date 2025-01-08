@@ -204,7 +204,7 @@
         <!-- Slider per sensibilità Bassi Cattivi -->
         <div class="slider-container">
             <div class="slider-label">Bassi Cattivi Sensibilità</div>
-            <input type="range" id="badBassSlider" class="slider" min="40" max="100" value="60">
+            <input type="range" id="badBassSlider" class="slider" min="40" max="70" value="40">
         </div>
 
     </div>
@@ -267,9 +267,9 @@ stopButton.addEventListener('click', stopDecibelMeter);
 function updateMessage(value) {
     const badBassThreshold = badBassSlider.value; // Ottieni il valore dallo slider
 
-    if (value >= 0 && value <= 40) {
+    if (value >= 0 && value <= 10) {
         message.textContent = ''; // Nessun messaggio quando il valore è tra 0 e 40
-    } else if (value > 40 && value <= 60) {
+    } else if (value > 10 && value <= 40) {
         message.textContent = 'Bassi Buoni';
         message.classList.remove('warning', 'expand');
         message.classList.add('expand');
