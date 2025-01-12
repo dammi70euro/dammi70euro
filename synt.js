@@ -40,17 +40,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const vcfLfoCheckbox = document.getElementById("vcfLfo");
   const vcfLfoAmpControl = document.getElementById("vcfLfoAmp");
   const vcfLfoRateControl = document.getElementById("vcfLfoRate");
+  
+  const gainControl = document.getElementById("gainControl");
+ const volumeControl = document.getElementById("volumeControl");
 
   let currentStep = 0;
   let tempo = 120;
   let nextStepTime = 0;
   let isPlaying = false;
+  
+  gainControl.addEventListener("input", updateSynth);
+ volumeControl.addEventListener("input", updateSynth);
 
   function startSynth() {
     oscillator1 = audioContext.createOscillator();
     oscillator2 = audioContext.createOscillator();
     filter = audioContext.createBiquadFilter();
     gainNode = audioContext.createGain();
+	volumeNode = audioContext.createGain();
+	
+	gainNode.gain.value = parseFloat(gainControl.value);
+	volumeNode.gain.value = parseFloat(volumeControl.value);
 
     lfo1 = audioContext.createOscillator();
     lfo1Gain = audioContext.createGain();
@@ -70,8 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     oscillator1.connect(filter);
     oscillator2.connect(filter);
+	
     filter.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+	gainNode.connect(audioContext.destination);
 
     lfo1.connect(lfo1Gain);
     lfo1Gain.connect(oscillator1.frequency);
@@ -116,6 +127,7 @@ function updateSynth() {
     oscillator1.frequency.value = vco1Control.value * 10;
     oscillator2.frequency.value = vco2Control.value * 10;
     filter.frequency.value = vcfControl.value * 100;
+	gainNode.gain.value = parseFloat(gainControl.value);
 
     lfo1Gain.gain.value = vco1LfoCheckbox.checked ? vco1LfoAmpControl.value : 0;
     lfo1.frequency.value = vco1LfoRateControl.value;
@@ -137,6 +149,8 @@ function updateSynth() {
     if (vcfLfoCheckbox.checked) {
       requestAnimationFrame(syncVCFSliderWithLFO);
     }
+
+    
   }
 }
 
@@ -192,7 +206,7 @@ function syncVCO1SliderWithLFO() {
     }
     updateSynth();
     gainNode.gain.cancelScheduledValues(audioContext.currentTime);
-    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+    gainNode.gain.setValueAtTime( parseFloat(gainControl.value)	, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + parseFloat(decayControl.value));
   }
 
