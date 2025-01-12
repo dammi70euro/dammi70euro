@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isPlaying = false;
   
   gainControl.addEventListener("input", updateSynth);
- volumeControl.addEventListener("input", updateSynth);
+ 
 
   function startSynth() {
     oscillator1 = audioContext.createOscillator();
@@ -60,7 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	volumeNode = audioContext.createGain();
 	
 	gainNode.gain.value = parseFloat(gainControl.value);
-	volumeNode.gain.value = parseFloat(volumeControl.value);
+	
+	
 
     lfo1 = audioContext.createOscillator();
     lfo1Gain = audioContext.createGain();
