@@ -98,6 +98,26 @@
       width: 50%;
     }
 	
+	  .nudge-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .nudge-button {
+    background: #00b0ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+    .nudge-button:hover {
+    background: #0091cc;
+  }
+	
 	.step.current {
   box-shadow: 0 0 30px 15px rgba(138, 43, 226, 0.9); /* Viola più intenso e marcato */
   transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
@@ -109,6 +129,8 @@
 <body>
   <div class="synth-container">
     <h1>SOGNOTRON</h1>
+	
+	
 	
 	
 	 <div class="control">
@@ -157,7 +179,10 @@
       <input type="range" id="tempoSlider" class="tempo-slider" min="30" max="300" value="120">
       <span id="tempoValue">120 BPM</span>
     </div>
-
+	<div class="nudge-buttons">
+  <button id="nudgeLeft" class="nudge-button">⬅️⏱️</button>
+  <button id="nudgeRight" class="nudge-button">⏱️➡️</button>
+</div>
     <div class="step-sequencer">
       <h2>Step Sequencer</h2>
 	  

@@ -271,6 +271,7 @@ function syncVCO1SliderWithLFO() {
     });
     sequencer.appendChild(step);
   }
+  
 
   randomize.addEventListener("click", () => {
     const fillPercentage = parseInt(randomFill.value, 10);
@@ -308,6 +309,29 @@ function syncVCO1SliderWithLFO() {
       playButton.textContent = "Stop";
     }
   });
+  
+    document.getElementById('nudgeLeft').addEventListener('click', () => {
+  const tempoSlider = document.getElementById('tempoSlider');
+  let currentTempo = parseInt(tempoSlider.value, 10);
+  if (currentTempo > 30) {
+    tempoSlider.value = currentTempo - 1;
+		tempo = parseInt(tempoSlider.value, 10);
+    tempoValue.textContent = `${tempo} BPM`;
+    document.getElementById('tempoValue').innerText = `${tempoSlider.value} BPM`;
+  }
+});
+
+document.getElementById('nudgeRight').addEventListener('click', () => {
+  const tempoSlider = document.getElementById('tempoSlider');
+  let currentTempo = parseInt(tempoSlider.value, 10);
+  if (currentTempo < 300) {
+    tempoSlider.value = currentTempo + 1;
+	tempo = parseInt(tempoSlider.value, 10);
+    tempoValue.textContent = `${tempo} BPM`;
+    document.getElementById('tempoValue').innerText = `${tempoSlider.value} BPM`;
+  }
+});
+
 
   buildSequencer();
 });
