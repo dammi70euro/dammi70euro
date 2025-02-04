@@ -50,10 +50,32 @@ function createMP3List(files) {
       spanTitle.classList.add('playing');
     });
 
+    // Pulsante Condividi
+    const shareButton = document.createElement('button');
+    shareButton.textContent = '📤 Condividi';
+    shareButton.classList.add('share-button');
+    shareButton.addEventListener('click', () => {
+      shareSong(file.name, `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`);
+    });
+
     li.appendChild(spanTitle);
     li.appendChild(playButton);
+    li.appendChild(shareButton);
     listElement.appendChild(li);
   });
+}
+
+function shareSong(title, url) {
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      text: `Ascolta questa canzone: ${title}`,
+      url: url
+    }).catch(err => console.log("Errore condivisione: ", err));
+  } else {
+    const whatsappUrl = `https://wa.me/?text=Ascolta+questa+canzone:+${encodeURIComponent(title)}+ ${encodeURIComponent(url)}`;
+    window.open(whatsappUrl, '_blank');
+  }
 }
 
 // Avvia il recupero dei file all'avvio
