@@ -8,20 +8,25 @@
 </head>
 <body>
 
-  <!-- Titolo -->
   <h1>Dammi 70 euro 💰</h1>
-
-  <!-- Contenitore che divide la pagina in due sezioni: top (lista mp3) e bottom (bottoni) -->
+  
+  <!-- Contenitore che divide la pagina in due sezioni verticali -->
   <div class="split-container">
-    <!-- TOP SECTION: lista tracce + player -->
+    <!-- TOP SECTION: Player fisso e lista tracce -->
     <div class="top-section">
+      
+      <!-- Player sempre visibile (sticky in alto) -->
+      <div class="player-container">
+        <audio id="player" controls preload="none">
+          Il tuo browser non supporta l'elemento audio.
+        </audio>
+      </div>
+
+      <!-- Lista delle tracce -->
       <ul id="mp3-list"></ul>
-      <audio id="player" controls preload="none">
-        Il tuo browser non supporta l'elemento audio.
-      </audio>
     </div>
 
-    <!-- BOTTOM SECTION: bottoni / strumenti -->
+    <!-- BOTTOM SECTION: Bottoni -->
     <div class="bottom-section">
       <div class="buttons-container">
         <a class="big-button" href="seconda.html">😞 Non lo fa 😞</a>

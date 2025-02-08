@@ -11,10 +11,10 @@ const player = document.getElementById('player');
 const urlParams = new URLSearchParams(window.location.search);
 const autoPlayId = urlParams.get('play');
 
-// Variabile per memorizzare quale file vogliamo auto-riprodurre
+// Variabile dove salviamo la traccia che serve far partire in autoplay
 let fileToAutoPlay = null;
 
-// 1. Recupera lista file da Google Drive
+// 1. Recupera la lista dei file da Google Drive
 async function fetchMP3Files() {
   try {
     const response = await fetch(
@@ -28,13 +28,15 @@ async function fetchMP3Files() {
         file.mimeType === 'audio/mpeg' || file.mimeType === 'audio/wav'
       );
 
-      // Crea la lista
-      createMP3List(audioFiles);
+      // Mostriamo al massimo 10 tracce
+      const limitedFiles = audioFiles.slice(0, 10);
 
-      // Se c'è un parametro ?play=, proviamo a impostare il file da riprodurre
+      // Crea la lista
+      createMP3List(limitedFiles);
+
+      // Se c'è un parametro ?play=..., cerchiamo tra queste 10 tracce
       if (autoPlayId) {
-        fileToAutoPlay = audioFiles.find(f => f.id === autoPlayId);
-        // Se il file esiste, tentiamo la riproduzione immediata
+        fileToAutoPlay = limitedFiles.find(f => f.id === autoPlayId);
         if (fileToAutoPlay) {
           autoPlayTrack(fileToAutoPlay);
         }
@@ -53,7 +55,8 @@ async function fetchMP3Files() {
 function createMP3List(files) {
   files.forEach(file => {
     const li = document.createElement('li');
-    
+    li.dataset.id = file.id; // Salviamo l'ID sul <li> per poterlo cercare
+
     // Titolo della canzone
     const spanTitle = document.createElement('span');
     spanTitle.textContent = file.name;
@@ -64,7 +67,7 @@ function createMP3List(files) {
     playButton.textContent = 'Play';
     playButton.classList.add('play-button');
     playButton.addEventListener('click', () => {
-      playTrack(file, spanTitle);
+      playTrack(file, spanTitle, playButton);
     });
 
     // Pulsante Condividi
@@ -82,29 +85,34 @@ function createMP3List(files) {
   });
 }
 
-// 3. Funzione per riprodurre una traccia al click di “Play”
-function playTrack(file, titleElement) {
+// 3. Funzione per riprodurre una traccia
+function playTrack(file, titleElement, buttonElement) {
   // Rimuovi eventuale evidenziazione precedente
   const current = document.querySelector('.playing');
   if (current) current.classList.remove('playing');
 
+  // Rimuovi eventuale evidenziazione "need-click" su tutti i pulsanti
+  document.querySelectorAll('.play-button.need-click')
+    .forEach(btn => btn.classList.remove('need-click'));
+
   // Imposta la fonte dell'audio
   player.src = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
   
-  // Prova ad avviare la riproduzione
+  // Tenta la riproduzione
   player.play()
     .then(() => {
       // Evidenzia il brano in riproduzione
       titleElement.classList.add('playing');
     })
     .catch(err => {
-      console.log("Autoplay bloccato o errore di riproduzione:", err);
-      // Se viene bloccato, possiamo mostrare un alert o un messaggio
-      alert("Impossibile riprodurre automaticamente. Tocca lo schermo o premi un pulsante per avviare l'audio.");
+      // Se l'autoplay viene bloccato (NotAllowedError), evidenziamo il pulsante
+      console.log("Riproduzione bloccata o errore:", err);
+      buttonElement.classList.add('need-click');
+      alert("Il browser ha bloccato l'autoplay. Clicca Play per ascoltare.");
     });
 }
 
-// 4. Funzione di condivisione
+// 4. Funzione per la condivisione
 function shareSong(title, fileId) {
   // Crea un link alla stessa pagina con parametro ?play=...
   const currentUrl = window.location.origin + window.location.pathname;
@@ -123,35 +131,33 @@ function shareSong(title, fileId) {
   }
 }
 
-// 5. Riproduzione automatica (se ?play=... è presente)
+// 5. Autoplay track (quando arrivi con ?play=ID)
 function autoPlayTrack(file) {
-  // Imposta la sorgente
-  player.src = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-  
-  player.play()
-    .then(() => {
-      // Se va a buon fine, evidenziamo il brano nella lista
-      highlightPlayingSong(file.name);
-    })
-    .catch(err => {
-      console.log("Autoplay bloccato:", err);
-      // Se l’autoplay viene bloccato, possiamo aspettare un'interazione dell'utente
-      // Oppure mostrare un messaggio/pulsante
-      // Esempio minimal: un alert e poi l’utente dovrà cliccare Play manualmente
-      alert("Per riprodurre automaticamente il brano devi prima interagire con la pagina. Premi Play!");
-    });
+  // Cerchiamo la <li> corrispondente
+  const li = document.querySelector(`li[data-id="${file.id}"]`);
+  if (li) {
+    // Scrolliamo fino a quella traccia, così l'utente la vede subito
+    li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Simuliamo la chiamata a playTrack
+    const spanTitle = li.querySelector('.song-title');
+    const playBtn = li.querySelector('.play-button');
+
+    // Prova a riprodurre
+    player.src = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+    player.play()
+      .then(() => {
+        // Evidenzia il titolo
+        spanTitle.classList.add('playing');
+      })
+      .catch(err => {
+        console.log("Autoplay bloccato:", err);
+        // Evidenziamo il pulsante di Play
+        playBtn.classList.add('need-click');
+        alert("Per riprodurre questa traccia, clicca sul pulsante Play.");
+      });
+  }
 }
 
-// Evidenzia la canzone in riproduzione
-function highlightPlayingSong(fileName) {
-  const allTitles = document.querySelectorAll('.song-title');
-  allTitles.forEach(titleSpan => {
-    titleSpan.classList.remove('playing');
-    if (titleSpan.textContent === fileName) {
-      titleSpan.classList.add('playing');
-    }
-  });
-}
-
-// Avvia il recupero dei file
+// Avvia il recupero dei file all'avvio
 fetchMP3Files();

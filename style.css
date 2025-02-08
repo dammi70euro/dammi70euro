@@ -1,5 +1,5 @@
 /* ======================== */
-/* CSS ORIGINALE (NON TOCCO)*/
+/* CSS ORIGINALE (non rimosso) */
 /* ======================== */
 
 body {
@@ -10,6 +10,8 @@ body {
   background-size: cover;
   color: #ffffff;
   position: relative;
+  height: 100vh;   /* Usiamo l'intera finestra */
+  overflow: hidden;/* Rimuove scrollbar generale */
 }
 
 h1 {
@@ -21,6 +23,8 @@ h1 {
   z-index: 10;
 }
 
+/* Manteniamo max-width e scrollbar personalizzata, 
+   ma limitiamo la creazione a max 10 tracce via JS */
 ul {
   list-style: none;
   padding: 0;
@@ -28,9 +32,14 @@ ul {
   max-width: 600px;
   position: relative;
   z-index: 10;
-  max-height: 400px; 
-  overflow-y: auto;
-  scrollbar-width: thin; 
+
+  /* Se ci sono molte tracce, si scrolla questa UL. */
+  overflow-y: auto;  
+  /* Altezza calcolata per fare in modo che stia nella sezione top. 
+     L'altezza effettiva viene controllata dal flex e dallo sticky player. */
+  flex: 1; /* Prende lo spazio rimanente nella colonna */
+  
+  scrollbar-width: thin;
   scrollbar-color: #00b0ff #1d1d1d;
 }
 
@@ -91,8 +100,6 @@ li {
 }
 
 audio {
-  display: block;
-  margin: 40px auto 0 auto;
   width: 100%;
   max-width: 600px;
   position: relative;
@@ -101,8 +108,8 @@ audio {
 
 .buttons-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 colonne */
-  gap: 20px; /* Spazio tra i bottoni */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   margin-top: 20px;
 }
 
@@ -179,43 +186,69 @@ audio {
 }
 
 .big-button:hover {
-  background: #e64a19; /* Sopra c'è già un :hover generale, qui non confligge */
+  background: #e64a19; 
 }
 
 /* ============================ */
-/* AGGIUNTA PER DIVISIONE 50/50 */
+/* NUOVE REGOLE per divisione 50/50 e player fisso */
 /* ============================ */
 
-/* Rimuovi l'overflow automatico del body, 
-   così controlliamo noi le scroll nelle sezioni. */
-body {
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* Contenitore per dividere la pagina in due sezioni verticali */
+/* Dividiamo la pagina in 50% per le tracce e 50% per i bottoni */
 .split-container {
-  /* occuperà tutto lo spazio sotto l'h1 */
-  position: relative;
   display: flex;
   flex-direction: column;
-  /* tolgo 120px per lasciare spazio a padding e h1 (regola in base alle tue necessità) */
-  height: calc(100vh - 120px);
   width: 100%;
-  z-index: 1; /* resta sopra lo sfondo */
+  /* h1 è alto ~30px + 20px di padding top/bottom = ~70-80px
+     lasciamo un offset e usiamo calcoli per la sezione. */
+  height: calc(100vh - 80px);
+  position: relative;
+  z-index: 1;
 }
 
-/* Sezione top e bottom: ognuna 50% dell’altezza rimasta */
+/* Metà pagina in alto, metà in basso */
 .top-section, .bottom-section {
   height: 50%;
-  overflow-y: auto; /* scrollbar se i contenuti superano il 50% */
-  padding: 0 10px;  /* un po' di margine orizzontale */
+  /* Nessuna scrollbar nel container principale */
+  overflow: hidden;
+  display: flex;       /* per gestire flex al suo interno */
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Se vuoi uno sfondo semitrasparente nelle due sezioni (opzionale):
-.top-section {
-  background: rgba(0,0,0,0.3);
+/* Il player rimane "fisso" in alto.
+   Usiamo position: sticky per farlo restare sempre visibile.
+   Serve un top: 0; e che l'elemento sia dentro un contenitore con overflow: auto o scroll. 
+   In questo caso la <ul> scorrerà sotto di esso. */
+.player-container {
+  width: 100%;
+  max-width: 600px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0,0,0,0.5);
+  padding: 0 10px;
 }
-.bottom-section {
-  background: rgba(0,0,0,0.3);
-} */
+
+/* In modo che la <ul> prenda tutto lo spazio rimanente,
+   e possa scrollare se ci sono molte tracce */
+#mp3-list {
+  flex: 1; 
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Evidenziazione del pulsante "Play" se l'autoplay fallisce */
+.play-button.need-click {
+  animation: blink 1s infinite alternate;
+  background-color: #f44336 !important; /* Rosso */
+}
+
+/* Effetto blink */
+@keyframes blink {
+  0% {
+    background-color: #f44336;
+  }
+  100% {
+    background-color: #00b0ff;
+  }
+}
