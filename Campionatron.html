@@ -8,20 +8,22 @@
 <body>
   <div class="mpc-container">
     <h1>Campionatron <span>🎛️</span></h1>
-    <p class="subtitle">Sampler Style <strong>Akai MPC</strong> con Effetti Audio</p>
+    <p class="subtitle">Sampler Style <strong>Akai MPC</strong> con Effetti Reali</p>
     
     <div class="record-section">
       <button id="start-recording">🔴 Rec</button>
       <button id="stop-recording" disabled>🛑 Stop</button>
     </div>
 
+    <!-- Waveform canvas -->
     <canvas id="waveform"></canvas>
 
     <div class="play-section">
       <button id="playback" disabled>▶️ Play</button>
-      <button id="stop-playback" disabled>⏹ Stop Playback</button>
+      <button id="stop-playback" disabled>⏹ Stop</button>
     </div>
 
+    <!-- Sezione controlli (slider) -->
     <div class="knobs-panel">
       <div class="knob-group">
         <label>Time Stretch</label>
@@ -53,9 +55,7 @@
       </div>
     </div>
 
-    <button id="download" disabled>💾 Download WAV (processed)</button>
-
-    <p class="small-info">Se la conversione offline non funziona, <a id="raw-download" href="#" download="recorded.webm" style="display:none;">Scarica il file raw</a></p>
+    <button id="download" disabled>💾 Download WAV</button>
   </div>
 
   <script src="Campionatron.js"></script>

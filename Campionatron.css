@@ -1,13 +1,18 @@
-/* Body generale */
-body {
+/* Reset base */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Corpo pagina scuro */
+body {
   background-color: #2f2f2f;
   color: #ddd;
   font-family: "Verdana", sans-serif;
 }
 
-/* Contenitore principale stile MPC */
+/* Contenitore stile MPC */
 .mpc-container {
   width: 720px;
   margin: 40px auto;
@@ -33,7 +38,7 @@ body {
   font-size: 0.9em;
 }
 
-/* Sezioni */
+/* Sezioni centrali */
 .record-section,
 .play-section {
   text-align: center;
@@ -64,6 +69,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Canvas per la waveform */
 #waveform {
   display: block;
   margin: 0 auto 20px auto;
@@ -74,7 +80,7 @@ button:disabled {
   box-shadow: inset 0 0 10px #000;
 }
 
-/* Knobs panel (slider) */
+/* Slider (knobs) */
 .knobs-panel {
   display: flex;
   flex-wrap: wrap;
@@ -96,7 +102,7 @@ button:disabled {
   color: #ccc;
 }
 
-/* Stile personalizzato per i range input (slider) */
+/* Stile slider base */
 input[type="range"] {
   -webkit-appearance: none;
   width: 100px;
@@ -122,15 +128,4 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   box-shadow: 0 0 2px #000;
   cursor: pointer;
-}
-
-/* Download link raw */
-.small-info {
-  text-align: center;
-  font-size: 0.8rem;
-  color: #888;
-}
-.small-info a {
-  color: #fff;
-  text-decoration: underline;
 }
