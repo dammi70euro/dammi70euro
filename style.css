@@ -1,21 +1,23 @@
-/* ===================================== */
-/* STILE DI BASE / SFONDO / TIPOGRAFIA   */
-/* ===================================== */
+/* ============================== */
+/* SFONDO, FONT, STRUTTURA BASE  */
+/* ============================== */
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   padding: 20px;
   margin: 0;
+
   /* Immagine di sfondo */
   background: url('dammi70euro.png') no-repeat center center fixed;
   background-size: cover;
   color: #ffffff;
   position: relative;
 
-  /* Occupiamo tutta la viewport e disabilitiamo la scrollbar generale */
+  /* Altezza schermo + no scrollbar generale */
   height: 100vh;
   overflow: hidden;
 }
 
+/* Titolo */
 h1 {
   text-align: center;
   margin-bottom: 30px;
@@ -25,13 +27,11 @@ h1 {
   z-index: 10;
 }
 
-/* ===================================== */
-/* CONTENITORE DIVISO 50% / 50%          */
-/* ===================================== */
+/* ============================== */
+/* CONTAINER DIVISO 50/50        */
+/* ============================== */
 
-/* Contenitore che si estende sotto l'h1:
-   occuperà (100vh - lo spazio dell'h1 e padding).
-   Puoi regolare la formula di calcolo se necessario. */
+/* Dividiamo l'area sotto h1 in due sezioni da 50% */
 .split-container {
   display: flex;
   flex-direction: column;
@@ -41,7 +41,6 @@ h1 {
   z-index: 1;
 }
 
-/* Sezioni top/bottom: ognuna 50% dell’altezza */
 .top-section,
 .bottom-section {
   height: 50%;
@@ -49,37 +48,36 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  overflow: hidden; /* di base nascondo l'overflow, poi si vedrà se ci serve auto */
+  /* NON togliere l'overflow qui, altrimenti i contenuti 
+     verranno tagliati se superano il 50% di altezza */
+  overflow: hidden;
 }
 
-/* ===================================== */
-/* PLAYER SEMPRE VISIBILE (STICKY)       */
-/* ===================================== */
+/* ============================== */
+/* PLAYER FISSO (STICKY)         */
+/* ============================== */
 
-/* Contenitore del player in alto, "sticky" per restare fisso al top
-   mentre la lista scorre sotto di lui (se necessario). */
 .player-container {
   width: 100%;
   max-width: 600px;
   position: sticky;
-  top: 0;                /* resta ancorato in alto */
+  top: 0;
   z-index: 10;
-  background: rgba(0,0,0,0.5); /* sfondo scuro semitrasparente */
-  padding: 0 10px;       /* un po' di margine orizzontale */
+  background: rgba(0,0,0,0.5);
+  padding: 0 10px;
 }
 
 audio {
   width: 100%;
   max-width: 600px;
   display: block;
-  margin: 0 auto; /* centrato */
+  margin: 0 auto;
 }
 
-/* ===================================== */
-/* LISTA TRACCE (TOP SECTION)            */
-/* ===================================== */
+/* ============================== */
+/* LISTA TRACCE (TOP SECTION)    */
+/* ============================== */
 
-/* Il container UL con scroll personalizzato */
 #mp3-list {
   width: 100%;
   max-width: 600px;
@@ -87,31 +85,35 @@ audio {
   padding: 0;
   margin: 0 auto;
 
-  /* Scrollbar interna se le tracce superano lo spazio disponibile */
+  /* Scorre se più di 5 tracce (ma le limitiamo 
+     anche via JS a 5). Così, se i titoli sono lunghi 
+     o su uno schermo molto piccolo, possiamo comunque scrollare. */
   overflow-y: auto;
+  flex: 1;
+
+  /* Scrollbar minimale */
   scrollbar-width: thin; 
-  scrollbar-color: #00b0ff #1d1d1d;
-  flex: 1; 
+  scrollbar-color: #00b0ff transparent;
 }
 
-/* Scrollbar personalizzata (WebKit) */
+/* Personalizzazione scrollbar (Chrome, Safari) */
 #mp3-list::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 #mp3-list::-webkit-scrollbar-track {
-  background: #1d1d1d;
-  border-radius: 4px;
+  background: transparent;
 }
 #mp3-list::-webkit-scrollbar-thumb {
   background: #00b0ff;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 #mp3-list::-webkit-scrollbar-thumb:hover {
   background: #0091cc;
 }
 
+/* Stile item lista */
 li {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -141,7 +143,6 @@ li {
   border: none;
   transition: background 0.3s ease;
 }
-
 .play-button:hover {
   background: #0091cc;
 }
@@ -151,10 +152,10 @@ li {
   color: #00b0ff;
 }
 
-/* Se l'autoplay viene bloccato: lampeggio */
+/* Se l'autoplay è bloccato */
 .play-button.need-click {
   animation: blink 1s infinite alternate;
-  background-color: #f44336 !important; /* Rosso */
+  background-color: #f44336 !important;
 }
 
 @keyframes blink {
@@ -166,46 +167,48 @@ li {
   }
 }
 
-/* ===================================== */
-/* SEZIONE BOTTONI (BOTTOM 50%)          */
-/* ===================================== */
+/* ============================== */
+/* SEZIONE BOTTONI (BOTTOM)      */
+/* ============================== */
 
-/* La .bottom-section può scorrere verticalmente 
-   se ci sono TANTI bottoni e vanno oltre l'altezza del 50%.
-   Quindi settiamo overflow-y: auto (invece di hidden).
-*/
+/* Scroll verticale all'occorrenza */
 .bottom-section {
-  overflow-y: auto; /* Attiva la scrollbar se i bottoni non ci stanno */
+  overflow-y: auto; 
 }
 
-/* Contenitore dei bottoni: grid/flex con wrap
-   in modo che si distribuiscano su più colonne. */
+/* Scrollbar minimale anche qui */
+.bottom-section::-webkit-scrollbar {
+  width: 6px;
+}
+.bottom-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+.bottom-section::-webkit-scrollbar-thumb {
+  background: #00b0ff;
+  border-radius: 3px;
+}
+.bottom-section::-webkit-scrollbar-thumb:hover {
+  background: #0091cc;
+}
+
+/* Contenitore bottoni */
 .buttons-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* bottoni centrati orizzontalmente */
-  align-items: flex-start; 
+  justify-content: center; 
+  align-items: flex-start;
   gap: 10px;
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
 }
 
-/* ===================================== */
-/* BOTTONI "A PILL" CON ANIMAZIONI       */
-/* ===================================== */
-
+/* Bottoni a pillola con animazioni */
 .big-button,
 .giangiotron-button {
-  /* Forma "pill" orizzontale */
   border-radius: 25px;
   height: 50px;
   padding: 0 20px;
-
-  /* Se vuoi larghezza fissa su ognuno, puoi fare 
-     width: 200px; 
-     altrimenti li rendi auto-larghezza. */
-
   background: linear-gradient(45deg, #ff5722, #03a9f4);
   border: none;
   cursor: pointer;
@@ -213,29 +216,60 @@ li {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.2em;
+  font-size: 1em; /* leggermente ridotto per starci su schermi piccoli */
   font-weight: bold;
   text-decoration: none;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.5s ease, background-color 0.5s ease;
+  min-width: 130px; /* un minimo di larghezza */
+  max-width: 220px; /* se vuoi limitare la massima larghezza */
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-/* Rotazione a 360° al passaggio */
+/* Rotazione al passaggio e riduzione al click */
 .big-button:hover,
 .giangiotron-button:hover {
   transform: rotate(360deg);
   background: linear-gradient(45deg, #03a9f4, #ff5722);
 }
-
 .big-button:active,
 .giangiotron-button:active {
   transform: scale(0.9);
 }
 
-/* Potresti lasciare o rimuovere la successiva regola 
-   che cambia colore su hover (avevi .big-button:hover { background: #e64a19 }).
-   Avendo la rotazione e il gradiente, potresti commentarla via. */
-.big-button:hover {
-  /* background: #e64a19; */
+/* Se vuoi mantenere la regola:
+   .big-button:hover { background: #e64a19; }
+   puoi commentarla o rimuoverla 
+   perché hai già il gradiente rotante.
+*/
+
+/* ============================== */
+/* MEDIA QUERY PER MOBILE         */
+/* ============================== */
+
+/* Esempio di ottimizzazione aggiuntiva: 
+   riduci un po' i margini e i padding su schermi piccoli */
+@media (max-width: 600px) {
+  h1 {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+  }
+  .split-container {
+    height: calc(100vh - 60px); /* meno spazio x h1 su mobile */
+  }
+  li {
+    margin-bottom: 10px;
+  }
+  .buttons-container {
+    gap: 8px;
+  }
+  .big-button,
+  .giangiotron-button {
+    font-size: 0.9em;
+    min-width: 100px;
+    max-width: 180px;
+    height: 45px;
+  }
 }
