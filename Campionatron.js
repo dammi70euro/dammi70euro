@@ -1,37 +1,37 @@
 /*************************************************************
- * Campionatron.js
+ * Campionatron.js - MPC Style
  * -----------------------------------------------------------
- * Script per gestire:
- *  - Registrazione microfono
+ * Funzionalità:
+ *  - Registrazione microfono (webm opus)
  *  - Visualizzazione forma d'onda
- *  - Effetti audio (delay, reverb, distorsione, gain, flanger, bitcrusher)
- *  - Time stretch (con playbackRate)
- *  - Download in formato WAV
+ *  - Playback con effetti (delay, reverb, distorsione, gain, flanger, bitcrusher)
+ *  - Download WAV (usando OfflineAudioContext) se supportato
+ *  - Link fallback a file webm originale
  *************************************************************/
 
-// ======== Variabili globali ========
+// Variabili
 let audioContext;
 let mediaRecorder;
 let recordedChunks = [];
 let audioBuffer = null;
 let source = null;
+let isPlaying = false;
 
-// Interfaccia degli effetti
+// Effetti
 let delayNode, reverbNode, distortionNode, gainNode, flangerDelayNode, bitcrusherNode;
-
-// Per il flanger (LFO)
-let flangerOscillator;
-let flangerGain;
-
-// Per la visualizzazione
 let analyzerNode;
+let flangerOscillator, flangerGain;
+
+// Canvas
 let waveformCanvas, waveformCtx, animationId;
 
-// ======== Riferimenti DOM ========
+// Dom
 const startBtn    = document.getElementById('start-recording');
 const stopBtn     = document.getElementById('stop-recording');
 const playBtn     = document.getElementById('playback');
+const stopPlaybackBtn = document.getElementById('stop-playback');
 const downloadBtn = document.getElementById('download');
+const rawDownloadLink = document.getElementById('raw-download');
 
 const timeStretchSlider = document.getElementById('time-stretch');
 const delaySlider       = document.getElementById('delay');
@@ -41,71 +41,86 @@ const gainSlider        = document.getElementById('gain');
 const flangerSlider     = document.getElementById('flanger');
 const bitcrusherSlider  = document.getElementById('bitcrusher');
 
-// Canvas waveform
 waveformCanvas = document.getElementById('waveform');
 waveformCtx = waveformCanvas.getContext('2d');
 
-// ======== Event Listeners ========
+// Event listeners
 startBtn.addEventListener('click', startRecording);
 stopBtn.addEventListener('click', stopRecording);
 playBtn.addEventListener('click', playback);
+stopPlaybackBtn.addEventListener('click', stopPlayback);
 downloadBtn.addEventListener('click', downloadWav);
 
-timeStretchSlider.addEventListener('input', updateEffects);
-delaySlider.addEventListener('input', updateEffects);
-reverbSlider.addEventListener('input', updateEffects);
-distortionSlider.addEventListener('input', updateEffects);
-gainSlider.addEventListener('input', updateEffects);
-flangerSlider.addEventListener('input', updateEffects);
-bitcrusherSlider.addEventListener('input', updateEffects);
+// Sliders
+[timeStretchSlider, delaySlider, reverbSlider, distortionSlider, gainSlider, flangerSlider, bitcrusherSlider]
+.forEach(s => s.addEventListener('input', updateEffects));
 
 /*************************************************************
- * Funzione di inizio registrazione
+ * START Recording
  *************************************************************/
 async function startRecording() {
-  // Resetta eventuali dati precedenti
   recordedChunks = [];
-  stopBtn.disabled = false;
-  startBtn.disabled = true;
-  playBtn.disabled = true;
-  downloadBtn.disabled = true;
+  audioBuffer = null;
 
-  // Crea o riusa un AudioContext
+  stopBtn.disabled     = false;
+  startBtn.disabled    = true;
+  playBtn.disabled     = true;
+  stopPlaybackBtn.disabled = true;
+  downloadBtn.disabled = true;
+  rawDownloadLink.style.display = 'none';
+
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
+  // Richiesta microfono
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  // Richiedi il flusso audio dal microfono
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-  
-  // Crea MediaRecorder
-  mediaRecorder = new MediaRecorder(stream);
-  mediaRecorder.ondataavailable = e => {
-    if (e.data && e.data.size > 0) {
+  // Verifica se il browser supporta un determinato mimeType
+  let options = { mimeType: 'audio/webm; codecs=opus' };
+  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+    // fallback
+    options = { mimeType: 'audio/webm' };
+  }
+
+  mediaRecorder = new MediaRecorder(stream, options);
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) {
       recordedChunks.push(e.data);
     }
   };
 
   mediaRecorder.onstop = async () => {
-    // Crea un Blob con i dati audio
-    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-    // Decodifica in AudioBuffer per poterlo riprodurre e manipolare
-    const arrayBuffer = await blob.arrayBuffer();
-    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    // Abbiamo finito di registrare
+    const blob = new Blob(recordedChunks, { type: options.mimeType });
+    
+    // Salviamo un link "raw" in webm (fallback se offlineAudioContext non funziona)
+    rawDownloadLink.href = URL.createObjectURL(blob);
+    rawDownloadLink.style.display = 'inline';
 
-    // Visualizza waveform registrata (una volta finita la registrazione)
-    drawWaveform(audioBuffer);
+    try {
+      // Decodifica con audioContext
+      const arrayBuffer = await blob.arrayBuffer();
+      audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-    // Abilita pulsante di Play
-    playBtn.disabled = false;
+      // Disegno della waveform statica
+      drawWaveform(audioBuffer);
+
+      // Abilita Playback e Download
+      playBtn.disabled = false;
+      stopPlaybackBtn.disabled = false;
+      downloadBtn.disabled = false;
+    } catch (err) {
+      console.error("Errore nella decodifica audio (forse Safari non supporta webm):", err);
+      alert("Impossibile decodificare l'audio nel tuo browser. Usa Chrome/Firefox o cambia formato.");
+    }
   };
 
-  // Avvia la registrazione
   mediaRecorder.start();
 }
 
 /*************************************************************
- * Funzione di stop registrazione
+ * STOP Recording
  *************************************************************/
 function stopRecording() {
   stopBtn.disabled = true;
@@ -114,138 +129,125 @@ function stopRecording() {
 }
 
 /*************************************************************
- * Funzione di riproduzione del campione registrato
+ * Riproduzione
  *************************************************************/
-function playback() {
+async function playback() {
   if (!audioBuffer) return;
 
-  // Se già in riproduzione, ferma tutto
-  if (source) {
-    source.stop();
-    source.disconnect();
-    source = null;
+  // Alcuni browser richiedono un .resume()
+  if (audioContext.state === 'suspended') {
+    await audioContext.resume();
   }
 
-  // Crea un nuovo buffer source
+  stopPlayback(); // Assicuriamoci di fermare eventuale audio in corso
+
   source = audioContext.createBufferSource();
   source.buffer = audioBuffer;
-
-  // Imposta playbackRate (time stretch)
   source.playbackRate.value = parseFloat(timeStretchSlider.value);
 
-  // Costruisci la catena di effetti
   buildAudioGraph(source, audioContext.destination);
 
-  // Avvia
   source.start();
+  isPlaying = true;
 }
 
 /*************************************************************
- * Costruzione della catena di effetti con parametri aggiornati
+ * STOP Playback
+ *************************************************************/
+function stopPlayback() {
+  if (source && isPlaying) {
+    source.stop();
+    source.disconnect();
+    source = null;
+    isPlaying = false;
+  }
+  cancelAnimationFrame(animationId);
+}
+
+/*************************************************************
+ * Build Audio Graph
  *************************************************************/
 function buildAudioGraph(inputNode, outputNode) {
-  // 1) Delay
+  // Delay
   delayNode = audioContext.createDelay(5.0);
   delayNode.delayTime.value = parseFloat(delaySlider.value);
 
-  // 2) Reverb (Convolver)
+  // Reverb
   reverbNode = audioContext.createConvolver();
-  // Genera un impulso di base per la dimostrazione
   reverbNode.buffer = generateImpulseResponse(audioContext, 2, 2);
-  // Reverb "mix" controllato dal reverbSlider
-  // -> Per semplicità usiamo un gain sul reverb e un mix se serve
-  let reverbGain = audioContext.createGain();
+  const reverbGain = audioContext.createGain();
   reverbGain.gain.value = parseFloat(reverbSlider.value);
 
-  // 3) Distorsione (WaveShaper)
+  // Distorsione
   distortionNode = audioContext.createWaveShaper();
   distortionNode.curve = makeDistortionCurve(parseFloat(distortionSlider.value) * 400);
   distortionNode.oversample = '4x';
 
-  // 4) Gain (amplificazione)
+  // Gain
   gainNode = audioContext.createGain();
   gainNode.gain.value = parseFloat(gainSlider.value);
 
-  // 5) Flanger
+  // Flanger
   flangerDelayNode = audioContext.createDelay();
-  flangerDelayNode.delayTime.value = 0.005; // ritardo di base
+  flangerDelayNode.delayTime.value = 0.005;
   flangerGain = audioContext.createGain();
-  flangerGain.gain.value = parseFloat(flangerSlider.value) * 0.004; // ampiezza modulazione
+  flangerGain.gain.value = parseFloat(flangerSlider.value) * 0.004;
 
   flangerOscillator = audioContext.createOscillator();
   flangerOscillator.type = 'sine';
-  flangerOscillator.frequency.value = 0.25; // Frequenza LFO
+  flangerOscillator.frequency.value = 0.25;
   flangerOscillator.connect(flangerGain).connect(flangerDelayNode.delayTime);
   flangerOscillator.start();
 
-  // 6) Bitcrusher
+  // Bitcrusher
   bitcrusherNode = createBitcrusherNode(audioContext, parseInt(bitcrusherSlider.value));
 
-  // 7) Analyzer (per disegnare waveform in tempo reale se serve)
+  // Analyser
   analyzerNode = audioContext.createAnalyser();
+  analyzerNode.fftSize = 2048;
 
   // Collegamenti
-  // input -> delay -> distorsione -> flanger -> bitcrusher -> reverb -> gain -> output
-  // E per il reverb: di solito si fa un send/return, qui facciamo un collegamento semplice
-  
-  // Ingresso
   inputNode.connect(delayNode);
-  // Delay
   delayNode.connect(distortionNode);
-  // Distorsione
   distortionNode.connect(flangerDelayNode);
-  // Flanger -> bitcrusher
   flangerDelayNode.connect(bitcrusherNode);
-  // Bitcrusher -> reverb
   bitcrusherNode.connect(reverbNode);
-  // Reverb -> reverbGain -> Gain
   reverbNode.connect(reverbGain);
   reverbGain.connect(gainNode);
-  // Gain -> Analyser -> Uscita
   gainNode.connect(analyzerNode);
   analyzerNode.connect(outputNode);
-  
-  // Attiva animazione se vuoi waveform in "realtime" (durante playback)
-  cancelAnimationFrame(animationId);
+
   animateWaveform();
 }
 
 /*************************************************************
- * Aggiornamento valori degli effetti in tempo reale
- * (non interrompe la riproduzione in corso,
- *  ma per alcuni parametri è necessario ricostruire il grafo).
+ * Aggiorna Effetti in tempo reale
  *************************************************************/
 function updateEffects() {
-  if (!source || !audioContext) return;
+  if (!source || !isPlaying) return;
 
-  // Aggiorna playback rate
+  // playbackRate
   source.playbackRate.value = parseFloat(timeStretchSlider.value);
 
-  // Delay
-  if (delayNode) {
-    delayNode.delayTime.value = parseFloat(delaySlider.value);
-  }
-
-  // Reverb (usiamo reverbGain come "mix")
-  // Nel codice di buildAudioGraph c'è un reverbGain. Per semplificare,
-  // possiamo ricostruire l'intero grafo (o potremmo mantenere un riferimento a reverbGain).
-  // Qui, per semplicità, ricostruiamo la catena.
-  buildAudioGraph(source, audioContext.destination);
+  // Ricostruisci la catena
+  // NB: Alcuni parametri come la distorsione waveShaper
+  // richiedono di rifare tutto il waveShaper curve.
+  stopPlayback();
+  playback(); 
 }
 
 /*************************************************************
- * Funzione per disegnare la waveform del buffer registrato
- * (Static waveform).
+ * Disegna Waveform Statica
  *************************************************************/
 function drawWaveform(buffer) {
-  const data = buffer.getChannelData(0); // Primo canale
+  const data = buffer.getChannelData(0);
   const width = waveformCanvas.width;
   const height = waveformCanvas.height;
-  
+
   waveformCtx.clearRect(0, 0, width, height);
-  waveformCtx.fillStyle = '#fff';
+  waveformCtx.fillStyle = '#1b1b1b';
   waveformCtx.fillRect(0, 0, width, height);
-  waveformCtx.strokeStyle = '#000';
+  waveformCtx.strokeStyle = '#00ff00';
   waveformCtx.beginPath();
 
   const step = Math.ceil(data.length / width);
@@ -255,67 +257,68 @@ function drawWaveform(buffer) {
     let min = 1.0;
     let max = -1.0;
     for (let j = 0; j < step; j++) {
-      const datum = data[(i * step) + j]; 
-      if (datum < min) min = datum;
-      if (datum > max) max = datum;
+      const idx = i * step + j;
+      if (idx < data.length) {
+        const val = data[idx];
+        if (val < min) min = val;
+        if (val > max) max = val;
+      }
     }
     waveformCtx.lineTo(i, (1 + min) * amp);
   }
-
   waveformCtx.stroke();
 }
 
 /*************************************************************
- * Visualizzazione waveform in tempo reale (analyzerNode)
+ * Animazione Waveform in tempo reale
  *************************************************************/
 function animateWaveform() {
   const bufferLength = analyzerNode.fftSize;
-  let dataArray = new Uint8Array(bufferLength);
-  
+  const dataArray = new Uint8Array(bufferLength);
+
   function draw() {
     animationId = requestAnimationFrame(draw);
+
     analyzerNode.getByteTimeDomainData(dataArray);
 
     waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-    waveformCtx.fillStyle = '#fff';
+    waveformCtx.fillStyle = '#1b1b1b';
     waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-    
+
     waveformCtx.lineWidth = 2;
-    waveformCtx.strokeStyle = '#000';
+    waveformCtx.strokeStyle = '#00ff00';
     waveformCtx.beginPath();
 
-    let sliceWidth = waveformCanvas.width * 1.0 / bufferLength;
+    let sliceWidth = waveformCanvas.width / bufferLength;
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
       let v = dataArray[i] / 128.0;
-      let y = v * waveformCanvas.height / 2;
-      
+      let y = v * (waveformCanvas.height / 2) + (waveformCanvas.height / 2);
+
       if (i === 0) {
         waveformCtx.moveTo(x, y);
       } else {
         waveformCtx.lineTo(x, y);
       }
-
       x += sliceWidth;
     }
 
-    waveformCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
     waveformCtx.stroke();
   }
   draw();
 }
 
 /*************************************************************
- * Generazione di un semplice impulso per la Convolver (Reverb)
+ * Impulso Reverb
  *************************************************************/
-function generateImpulseResponse(audioCtx, duration, decay) {
-  const sampleRate = audioCtx.sampleRate;
-  const length = sampleRate * duration;
-  const impulse = audioCtx.createBuffer(2, length, sampleRate);
-  
-  for (let channel = 0; channel < 2; channel++) {
-    let channelData = impulse.getChannelData(channel);
+function generateImpulseResponse(ctx, duration, decay) {
+  const sr = ctx.sampleRate;
+  const length = sr * duration;
+  const impulse = ctx.createBuffer(2, length, sr);
+
+  for (let ch = 0; ch < 2; ch++) {
+    let channelData = impulse.getChannelData(ch);
     for (let i = 0; i < length; i++){
       channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
     }
@@ -324,70 +327,73 @@ function generateImpulseResponse(audioCtx, duration, decay) {
 }
 
 /*************************************************************
- * DistortionCurve (semplice)
+ * Distorsione
  *************************************************************/
 function makeDistortionCurve(amount) {
-  let n_samples = 256,
-      curve = new Float32Array(n_samples);
-  let x;
-  for (let i = 0; i < n_samples; ++i ) {
-    x = i * 2 / n_samples - 1;
-    curve[i] = ((3 + amount) * x * 20 * Math.PI / 180) /
+  const n_samples = 256;
+  const curve = new Float32Array(n_samples);
+
+  for (let i = 0; i < n_samples; i++) {
+    let x = i * 2 / n_samples - 1;
+    curve[i] = ((3 + amount) * x * 20 * Math.PI / 180) / 
                (Math.PI + amount * Math.abs(x));
   }
   return curve;
 }
 
 /*************************************************************
- * Crea un bitcrusher node
+ * Bitcrusher
  *************************************************************/
 function createBitcrusherNode(context, bits) {
-  // bits tra 1 e 16
-  const bitcrusher = context.createScriptProcessor(4096, 1, 1);
+  const node = context.createScriptProcessor(4096, 1, 1);
   let phaser = 0;
-  let increment = 0.002;
-  
-  bitcrusher.onaudioprocess = function(e) {
+  let increment = 0.002; // Frequenza di campionamento ridotta
+
+  node.onaudioprocess = (e) => {
     let input = e.inputBuffer.getChannelData(0);
     let output = e.outputBuffer.getChannelData(0);
     let step = Math.pow(0.5, bits);
-    for (let i = 0; i < input.length; i++){
+
+    for (let i = 0; i < input.length; i++) {
       phaser += increment;
       if (phaser >= 1.0) {
         phaser -= 1.0;
-        // quantizzazione
         output[i] = step * Math.floor(input[i] / step + 0.5);
       } else {
-        // mantieni l'ultimo campione
-        output[i] = output[i-1] || 0;
+        // mantieni il valore precedente
+        output[i] = output[i - 1] || 0;
       }
     }
   };
-  return bitcrusher;
+  return node;
 }
 
 /*************************************************************
- * Funzione per scaricare l'audio con gli effetti in formato WAV
- * - Usa OfflineAudioContext per renderizzare gli effetti
- * - Salva il risultato in un blob WAV
+ * Download WAV (OfflineAudioContext)
  *************************************************************/
 async function downloadWav() {
   if (!audioBuffer) return;
 
-  // Creiamo un OfflineAudioContext della stessa configurazione
-  const offlineCtx = new OfflineAudioContext(
-    audioBuffer.numberOfChannels,
-    audioBuffer.length,
-    audioBuffer.sampleRate
-  );
+  // Tenta un rendering offline con gli stessi parametri
+  let offlineCtx;
+  try {
+    offlineCtx = new OfflineAudioContext(
+      audioBuffer.numberOfChannels,
+      audioBuffer.length,
+      audioBuffer.sampleRate
+    );
+  } catch (err) {
+    console.error("OfflineAudioContext non supportato:", err);
+    alert("Il tuo browser non supporta OfflineAudioContext, impossibile generare WAV!");
+    return;
+  }
 
-  // Source offline
   const offlineSource = offlineCtx.createBufferSource();
   offlineSource.buffer = audioBuffer;
-
-  // Ricrea i nodi di effetto offline
-  const offlineDelayNode = offlineCtx.createDelay(5.0);
-  offlineDelayNode.delayTime.value = parseFloat(delaySlider.value);
+  
+  // Ricrea gli effetti offline
+  const offlineDelay = offlineCtx.createDelay(5.0);
+  offlineDelay.delayTime.value = parseFloat(delaySlider.value);
 
   const offlineDistortion = offlineCtx.createWaveShaper();
   offlineDistortion.curve = makeDistortionCurve(parseFloat(distortionSlider.value) * 400);
@@ -395,13 +401,13 @@ async function downloadWav() {
 
   const offlineConvolver = offlineCtx.createConvolver();
   offlineConvolver.buffer = generateImpulseResponse(offlineCtx, 2, 2);
-  let offlineReverbGain = offlineCtx.createGain();
+
+  const offlineReverbGain = offlineCtx.createGain();
   offlineReverbGain.gain.value = parseFloat(reverbSlider.value);
 
-  const offlineGainNode = offlineCtx.createGain();
-  offlineGainNode.gain.value = parseFloat(gainSlider.value);
+  const offlineGain = offlineCtx.createGain();
+  offlineGain.gain.value = parseFloat(gainSlider.value);
 
-  // Flanger offline
   const offlineFlangerDelay = offlineCtx.createDelay();
   offlineFlangerDelay.delayTime.value = 0.005;
 
@@ -411,107 +417,93 @@ async function downloadWav() {
   // Bitcrusher offline
   const offlineBitcrusher = createBitcrusherNode(offlineCtx, parseInt(bitcrusherSlider.value));
 
-  // LFO flanger offline: lo creiamo ma su OfflineAudioContext non si anima “in tempo reale”.
-  // Verrà reso staticamente. Per una soluzione corretta su flanger offline,
-  // bisognerebbe simulare il LFO su un buffer. Qui facciamo un set statico per la demo.
-  // (In un ambiente offline, l'oscillatore non scorre in "tempo reale" come in diretta.)
-  // Per la dimostrazione semplifichiamo.
+  // Flanger LFO in offline non “scorre” come in real-time,
+  // per semplicità aggiungiamo un offset fisso
   offlineFlangerDelay.delayTime.value += offlineFlangerGain.gain.value * 0.5;
 
-  // Collegamenti offline
-  offlineSource.connect(offlineDelayNode);
-  offlineDelayNode.connect(offlineDistortion);
+  // Collegamenti
+  offlineSource.connect(offlineDelay);
+  offlineDelay.connect(offlineDistortion);
   offlineDistortion.connect(offlineFlangerDelay);
   offlineFlangerDelay.connect(offlineBitcrusher);
   offlineBitcrusher.connect(offlineConvolver);
   offlineConvolver.connect(offlineReverbGain);
-  offlineReverbGain.connect(offlineGainNode);
-  offlineGainNode.connect(offlineCtx.destination);
+  offlineReverbGain.connect(offlineGain);
+  offlineGain.connect(offlineCtx.destination);
 
   offlineSource.playbackRate.value = parseFloat(timeStretchSlider.value);
 
   offlineSource.start();
 
-  // Render
-  const renderedBuffer = await offlineCtx.startRendering();
+  try {
+    const renderedBuffer = await offlineCtx.startRendering();
+    const wavBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
 
-  // Codifica in WAV
-  const wavBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
-
-  // Crea un link per il download
-  const url = URL.createObjectURL(wavBlob);
-  const a = document.createElement('a');
-  a.style.display = 'none';
-  a.href = url;
-  a.download = 'campionatron_output.wav';
-  document.body.appendChild(a);
-  a.click();
-
-  // Cleanup
-  window.URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Campionatron_processed.wav';
+    document.body.appendChild(a);
+    a.style.display = 'none';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Errore in OfflineAudioContext:", err);
+    alert("Offline rendering non riuscito, vedi console.");
+  }
 }
 
 /*************************************************************
- * Al termine della registrazione, abilita Download
- *************************************************************/
-mediaRecorder && mediaRecorder.addEventListener('stop', () => {
-  downloadBtn.disabled = false;
-});
-
-/*************************************************************
- * bufferToWave: Converte un AudioBuffer in Blob .wav
+ * Converte AudioBuffer in WAV (Blob)
  *************************************************************/
 function bufferToWave(abuffer, len) {
-  let numOfChannels = abuffer.numberOfChannels,
-      length = len * numOfChannels * 2 + 44,
-      buffer = new ArrayBuffer(length),
-      view = new DataView(buffer),
-      channels = [],
-      i, sample,
-      offset = 0,
-      pos = 0;
+  const numOfChannels = abuffer.numberOfChannels;
+  const length = len * numOfChannels * 2 + 44;
+  const buffer = new ArrayBuffer(length);
+  const view = new DataView(buffer);
+  const channels = [];
+  let pos = 0;
+  let offset = 0;
 
-  // helper
-  function writeString(view, offset, str) {
+  function writeString(str) {
     for (let i = 0; i < str.length; i++){
-      view.setUint8(offset + i, str.charCodeAt(i));
+      view.setUint8(pos++, str.charCodeAt(i));
     }
   }
 
-  // RIFF chunk descriptor
-  writeString(view, pos, 'RIFF');  pos += 4;
+  // RIFF chunk
+  writeString('RIFF');
   view.setUint32(pos, length - 8, true); pos += 4;
-  writeString(view, pos, 'WAVE'); pos += 4;
-  // Fmt subchunk
-  writeString(view, pos, 'fmt '); pos += 4;
-  view.setUint32(pos, 16, true); pos += 4; // SubChunk1Size
-  view.setUint16(pos, 1, true);  pos += 2; // PCM
+  writeString('WAVE');
+
+  // fmt 
+  writeString('fmt ');
+  view.setUint32(pos, 16, true); pos += 4; // subchunk1size
+  view.setUint16(pos, 1, true); pos += 2;  // PCM
   view.setUint16(pos, numOfChannels, true); pos += 2;
   view.setUint32(pos, abuffer.sampleRate, true); pos += 4;
   view.setUint32(pos, abuffer.sampleRate * numOfChannels * 2, true); pos += 4;
   view.setUint16(pos, numOfChannels * 2, true); pos += 2;
-  view.setUint16(pos, 16, true); pos += 2; // bits per sample
-  // data subchunk
-  writeString(view, pos, 'data'); pos += 4;
+  view.setUint16(pos, 16, true); pos += 2; // bits
+
+  // data
+  writeString('data');
   view.setUint32(pos, length - pos - 4, true); pos += 4;
 
-  // Scrittura dei canali
   for(let ch = 0; ch < numOfChannels; ch++){
     channels.push(abuffer.getChannelData(ch));
   }
 
   while(pos < length) {
     for (let ch = 0; ch < numOfChannels; ch++){
-      sample = channels[ch][offset]; 
-      // converte da [-1,1] a 16-bit
-      let s = Math.max(-1, Math.min(1, sample));
-      s = s < 0 ? s * 32768 : s * 32767; 
-      view.setInt16(pos, s, true);
+      let sample = channels[ch][offset];
+      sample = Math.max(-1, Math.min(1, sample));
+      sample = sample < 0 ? sample * 32768 : sample * 32767;
+      view.setInt16(pos, sample, true);
       pos += 2;
     }
-    offset++
+    offset++;
   }
 
   return new Blob([buffer], { type: 'audio/wav' });
 }
-

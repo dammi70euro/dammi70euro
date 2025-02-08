@@ -2,55 +2,61 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Campionatron</title>
+  <title>Campionatron - MPC Style</title>
   <link rel="stylesheet" href="Campionatron.css" />
 </head>
 <body>
-  <h1>Campionatron</h1>
+  <div class="mpc-container">
+    <h1>Campionatron <span>🎛️</span></h1>
+    <p class="subtitle">Sampler Style <strong>Akai MPC</strong> con Effetti Audio</p>
+    
+    <div class="record-section">
+      <button id="start-recording">🔴 Rec</button>
+      <button id="stop-recording" disabled>🛑 Stop</button>
+    </div>
 
-  <div class="record-section">
-    <button id="start-recording">Inizia Registrazione</button>
-    <button id="stop-recording" disabled>Ferma Registrazione</button>
+    <canvas id="waveform"></canvas>
+
+    <div class="play-section">
+      <button id="playback" disabled>▶️ Play</button>
+      <button id="stop-playback" disabled>⏹ Stop Playback</button>
+    </div>
+
+    <div class="knobs-panel">
+      <div class="knob-group">
+        <label>Time Stretch</label>
+        <input type="range" id="time-stretch" min="0.5" max="2" step="0.01" value="1">
+      </div>
+      <div class="knob-group">
+        <label>Delay</label>
+        <input type="range" id="delay" min="0" max="1" step="0.01" value="0">
+      </div>
+      <div class="knob-group">
+        <label>Reverb</label>
+        <input type="range" id="reverb" min="0" max="1" step="0.01" value="0">
+      </div>
+      <div class="knob-group">
+        <label>Distorsion</label>
+        <input type="range" id="distortion" min="0" max="1" step="0.01" value="0">
+      </div>
+      <div class="knob-group">
+        <label>Gain</label>
+        <input type="range" id="gain" min="0" max="2" step="0.01" value="1">
+      </div>
+      <div class="knob-group">
+        <label>Flanger</label>
+        <input type="range" id="flanger" min="0" max="1" step="0.01" value="0">
+      </div>
+      <div class="knob-group">
+        <label>Bitcrusher</label>
+        <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16">
+      </div>
+    </div>
+
+    <button id="download" disabled>💾 Download WAV (processed)</button>
+
+    <p class="small-info">Se la conversione offline non funziona, <a id="raw-download" href="#" download="recorded.webm" style="display:none;">Scarica il file raw</a></p>
   </div>
-
-  <div class="play-section">
-    <button id="playback" disabled>Play</button>
-  </div>
-
-  <canvas id="waveform"></canvas>
-
-  <div class="controls">
-    <div class="control-group">
-      <label for="time-stretch">Time Stretch</label>
-      <input type="range" id="time-stretch" min="0.5" max="2" step="0.01" value="1">
-    </div>
-    <div class="control-group">
-      <label for="delay">Delay</label>
-      <input type="range" id="delay" min="0" max="1" step="0.01" value="0">
-    </div>
-    <div class="control-group">
-      <label for="reverb">Reverb</label>
-      <input type="range" id="reverb" min="0" max="1" step="0.01" value="0">
-    </div>
-    <div class="control-group">
-      <label for="distortion">Distorsione</label>
-      <input type="range" id="distortion" min="0" max="1" step="0.01" value="0">
-    </div>
-    <div class="control-group">
-      <label for="gain">Gain</label>
-      <input type="range" id="gain" min="0" max="2" step="0.01" value="1">
-    </div>
-    <div class="control-group">
-      <label for="flanger">Flanger</label>
-      <input type="range" id="flanger" min="0" max="1" step="0.01" value="0">
-    </div>
-    <div class="control-group">
-      <label for="bitcrusher">Bitcrusher</label>
-      <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16">
-    </div>
-  </div>
-
-  <button id="download" disabled>Download WAV</button>
 
   <script src="Campionatron.js"></script>
 </body>
