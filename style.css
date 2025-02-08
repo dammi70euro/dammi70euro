@@ -1,17 +1,19 @@
-/* ======================== */
-/* CSS ORIGINALE (non rimosso) */
-/* ======================== */
-
+/* ===================================== */
+/* STILE DI BASE / SFONDO / TIPOGRAFIA   */
+/* ===================================== */
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   padding: 20px;
   margin: 0;
+  /* Immagine di sfondo */
   background: url('dammi70euro.png') no-repeat center center fixed;
   background-size: cover;
   color: #ffffff;
   position: relative;
-  height: 100vh;   /* Usiamo l'intera finestra */
-  overflow: hidden;/* Rimuove scrollbar generale */
+
+  /* Occupiamo tutta la viewport e disabilitiamo la scrollbar generale */
+  height: 100vh;
+  overflow: hidden;
 }
 
 h1 {
@@ -23,38 +25,88 @@ h1 {
   z-index: 10;
 }
 
-/* Manteniamo max-width e scrollbar personalizzata, 
-   ma limitiamo la creazione a max 10 tracce via JS */
-ul {
+/* ===================================== */
+/* CONTENITORE DIVISO 50% / 50%          */
+/* ===================================== */
+
+/* Contenitore che si estende sotto l'h1:
+   occuperà (100vh - lo spazio dell'h1 e padding).
+   Puoi regolare la formula di calcolo se necessario. */
+.split-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 80px); /* 80px ~ spazio usato da h1 e padding */
+  position: relative;
+  z-index: 1;
+}
+
+/* Sezioni top/bottom: ognuna 50% dell’altezza */
+.top-section,
+.bottom-section {
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  overflow: hidden; /* di base nascondo l'overflow, poi si vedrà se ci serve auto */
+}
+
+/* ===================================== */
+/* PLAYER SEMPRE VISIBILE (STICKY)       */
+/* ===================================== */
+
+/* Contenitore del player in alto, "sticky" per restare fisso al top
+   mentre la lista scorre sotto di lui (se necessario). */
+.player-container {
+  width: 100%;
+  max-width: 600px;
+  position: sticky;
+  top: 0;                /* resta ancorato in alto */
+  z-index: 10;
+  background: rgba(0,0,0,0.5); /* sfondo scuro semitrasparente */
+  padding: 0 10px;       /* un po' di margine orizzontale */
+}
+
+audio {
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  margin: 0 auto; /* centrato */
+}
+
+/* ===================================== */
+/* LISTA TRACCE (TOP SECTION)            */
+/* ===================================== */
+
+/* Il container UL con scroll personalizzato */
+#mp3-list {
+  width: 100%;
+  max-width: 600px;
   list-style: none;
   padding: 0;
   margin: 0 auto;
-  max-width: 600px;
-  position: relative;
-  z-index: 10;
 
-  /* Se ci sono molte tracce, si scrolla questa UL. */
-  overflow-y: auto;  
-  /* Altezza calcolata per fare in modo che stia nella sezione top. 
-     L'altezza effettiva viene controllata dal flex e dallo sticky player. */
-  flex: 1; /* Prende lo spazio rimanente nella colonna */
-  
-  scrollbar-width: thin;
+  /* Scrollbar interna se le tracce superano lo spazio disponibile */
+  overflow-y: auto;
+  scrollbar-width: thin; 
   scrollbar-color: #00b0ff #1d1d1d;
+  flex: 1; 
 }
 
-ul::-webkit-scrollbar {
+/* Scrollbar personalizzata (WebKit) */
+#mp3-list::-webkit-scrollbar {
   width: 8px;
 }
-ul::-webkit-scrollbar-track {
+#mp3-list::-webkit-scrollbar-track {
   background: #1d1d1d;
   border-radius: 4px;
 }
-ul::-webkit-scrollbar-thumb {
+#mp3-list::-webkit-scrollbar-thumb {
   background: #00b0ff;
   border-radius: 4px;
 }
-ul::-webkit-scrollbar-thumb:hover {
+#mp3-list::-webkit-scrollbar-thumb:hover {
   background: #0091cc;
 }
 
@@ -99,70 +151,65 @@ li {
   color: #00b0ff;
 }
 
-audio {
-  width: 100%;
-  max-width: 600px;
-  position: relative;
-  z-index: 10;
+/* Se l'autoplay viene bloccato: lampeggio */
+.play-button.need-click {
+  animation: blink 1s infinite alternate;
+  background-color: #f44336 !important; /* Rosso */
 }
 
+@keyframes blink {
+  0% {
+    background-color: #f44336;
+  }
+  100% {
+    background-color: #00b0ff;
+  }
+}
+
+/* ===================================== */
+/* SEZIONE BOTTONI (BOTTOM 50%)          */
+/* ===================================== */
+
+/* La .bottom-section può scorrere verticalmente 
+   se ci sono TANTI bottoni e vanno oltre l'altezza del 50%.
+   Quindi settiamo overflow-y: auto (invece di hidden).
+*/
+.bottom-section {
+  overflow-y: auto; /* Attiva la scrollbar se i bottoni non ci stanno */
+}
+
+/* Contenitore dei bottoni: grid/flex con wrap
+   in modo che si distribuiscano su più colonne. */
 .buttons-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.big-button {
-  display: block;
-  padding: 15px;
-  background-color: #4CAF50;
-  color: white;
-  text-align: center;
-  font-size: 18px;
-  border-radius: 10px;
-  text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
-
-/* Bottoni e animazioni circolari */
-.giangiotron-button {
-  width: 150px;
-  height: 150px;
-  background: linear-gradient(45deg, #ff5722, #03a9f4);
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2em;
-  font-weight: bold;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.5s ease, background-color 0.5s ease;
+  flex-wrap: wrap;
+  justify-content: center; /* bottoni centrati orizzontalmente */
+  align-items: flex-start; 
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-.giangiotron-button:hover {
-  transform: rotate(360deg);
-  background: linear-gradient(45deg, #03a9f4, #ff5722);
-}
+/* ===================================== */
+/* BOTTONI "A PILL" CON ANIMAZIONI       */
+/* ===================================== */
 
-.giangiotron-button:active {
-  transform: scale(0.9);
-}
-
-/* Stesso stile circolare per big-button */
 .big-button,
 .giangiotron-button {
-  width: 150px;
-  height: 150px;
+  /* Forma "pill" orizzontale */
+  border-radius: 25px;
+  height: 50px;
+  padding: 0 20px;
+
+  /* Se vuoi larghezza fissa su ognuno, puoi fare 
+     width: 200px; 
+     altrimenti li rendi auto-larghezza. */
+
   background: linear-gradient(45deg, #ff5722, #03a9f4);
   border: none;
-  border-radius: 50%;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   color: white;
@@ -174,6 +221,7 @@ audio {
   transition: transform 0.5s ease, background-color 0.5s ease;
 }
 
+/* Rotazione a 360° al passaggio */
 .big-button:hover,
 .giangiotron-button:hover {
   transform: rotate(360deg);
@@ -185,70 +233,9 @@ audio {
   transform: scale(0.9);
 }
 
+/* Potresti lasciare o rimuovere la successiva regola 
+   che cambia colore su hover (avevi .big-button:hover { background: #e64a19 }).
+   Avendo la rotazione e il gradiente, potresti commentarla via. */
 .big-button:hover {
-  background: #e64a19; 
-}
-
-/* ============================ */
-/* NUOVE REGOLE per divisione 50/50 e player fisso */
-/* ============================ */
-
-/* Dividiamo la pagina in 50% per le tracce e 50% per i bottoni */
-.split-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  /* h1 è alto ~30px + 20px di padding top/bottom = ~70-80px
-     lasciamo un offset e usiamo calcoli per la sezione. */
-  height: calc(100vh - 80px);
-  position: relative;
-  z-index: 1;
-}
-
-/* Metà pagina in alto, metà in basso */
-.top-section, .bottom-section {
-  height: 50%;
-  /* Nessuna scrollbar nel container principale */
-  overflow: hidden;
-  display: flex;       /* per gestire flex al suo interno */
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Il player rimane "fisso" in alto.
-   Usiamo position: sticky per farlo restare sempre visibile.
-   Serve un top: 0; e che l'elemento sia dentro un contenitore con overflow: auto o scroll. 
-   In questo caso la <ul> scorrerà sotto di esso. */
-.player-container {
-  width: 100%;
-  max-width: 600px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(0,0,0,0.5);
-  padding: 0 10px;
-}
-
-/* In modo che la <ul> prenda tutto lo spazio rimanente,
-   e possa scrollare se ci sono molte tracce */
-#mp3-list {
-  flex: 1; 
-  width: 100%;
-  max-width: 600px;
-}
-
-/* Evidenziazione del pulsante "Play" se l'autoplay fallisce */
-.play-button.need-click {
-  animation: blink 1s infinite alternate;
-  background-color: #f44336 !important; /* Rosso */
-}
-
-/* Effetto blink */
-@keyframes blink {
-  0% {
-    background-color: #f44336;
-  }
-  100% {
-    background-color: #00b0ff;
-  }
+  /* background: #e64a19; */
 }

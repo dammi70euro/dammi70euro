@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Campionatron</title>
+  <link rel="stylesheet" href="Campionatron.css" />
+</head>
+<body>
+  <h1>Campionatron</h1>
+
+  <div class="record-section">
+    <button id="start-recording">Inizia Registrazione</button>
+    <button id="stop-recording" disabled>Ferma Registrazione</button>
+  </div>
+
+  <div class="play-section">
+    <button id="playback" disabled>Play</button>
+  </div>
+
+  <canvas id="waveform"></canvas>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="time-stretch">Time Stretch</label>
+      <input type="range" id="time-stretch" min="0.5" max="2" step="0.01" value="1">
+    </div>
+    <div class="control-group">
+      <label for="delay">Delay</label>
+      <input type="range" id="delay" min="0" max="1" step="0.01" value="0">
+    </div>
+    <div class="control-group">
+      <label for="reverb">Reverb</label>
+      <input type="range" id="reverb" min="0" max="1" step="0.01" value="0">
+    </div>
+    <div class="control-group">
+      <label for="distortion">Distorsione</label>
+      <input type="range" id="distortion" min="0" max="1" step="0.01" value="0">
+    </div>
+    <div class="control-group">
+      <label for="gain">Gain</label>
+      <input type="range" id="gain" min="0" max="2" step="0.01" value="1">
+    </div>
+    <div class="control-group">
+      <label for="flanger">Flanger</label>
+      <input type="range" id="flanger" min="0" max="1" step="0.01" value="0">
+    </div>
+    <div class="control-group">
+      <label for="bitcrusher">Bitcrusher</label>
+      <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16">
+    </div>
+  </div>
+
+  <button id="download" disabled>Download WAV</button>
+
+  <script src="Campionatron.js"></script>
+</body>
+</html>
