@@ -1,3 +1,7 @@
+/* ======================== */
+/* CSS ORIGINALE (NON TOCCO)*/
+/* ======================== */
+
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
   padding: 20px;
@@ -96,93 +100,122 @@ audio {
 }
 
 .buttons-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr); /* 3 colonne */
-      gap: 20px; /* Spazio tra i bottoni */
-      margin-top: 20px;
-    }
-
-    .big-button {
-      display: block;
-      padding: 15px;
-      background-color: #4CAF50;
-      color: white;
-      text-align: center;
-      font-size: 18px;
-      border-radius: 10px;
-      text-decoration: none;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s ease;
-    }
-
-    .big-button:hover {
-      background-color: #45a049;
-    }
-\
-
-.giangiotron-button {
-    width: 150px;
-    height: 150px;
-    background: linear-gradient(45deg, #ff5722, #03a9f4);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2em;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: transform 0.5s ease, background-color 0.5s ease;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 colonne */
+  gap: 20px; /* Spazio tra i bottoni */
+  margin-top: 20px;
 }
 
-    .giangiotron-button:hover {
-        transform: rotate(360deg);
-        background: linear-gradient(45deg, #03a9f4, #ff5722);
-    }
+.big-button {
+  display: block;
+  padding: 15px;
+  background-color: #4CAF50;
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
 
-    .giangiotron-button:active {
-        transform: scale(0.9);
-    }
+/* Bottoni e animazioni circolari */
+.giangiotron-button {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(45deg, #ff5722, #03a9f4);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2em;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.5s ease, background-color 0.5s ease;
+}
 
+.giangiotron-button:hover {
+  transform: rotate(360deg);
+  background: linear-gradient(45deg, #03a9f4, #ff5722);
+}
 
+.giangiotron-button:active {
+  transform: scale(0.9);
+}
+
+/* Stesso stile circolare per big-button */
 .big-button,
-    .giangiotron-button {
-      width: 150px;
-      height: 150px;
-      background: linear-gradient(45deg, #ff5722, #03a9f4);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.2em;
-      font-weight: bold;
-      text-decoration: none;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      transition: transform 0.5s ease, background-color 0.5s ease;
-    }
+.giangiotron-button {
+  width: 150px;
+  height: 150px;
+  background: linear-gradient(45deg, #ff5722, #03a9f4);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.5s ease, background-color 0.5s ease;
+}
 
-    .big-button:hover,
-    .giangiotron-button:hover {
-      transform: rotate(360deg);
-      background: linear-gradient(45deg, #03a9f4, #ff5722);
-    }
+.big-button:hover,
+.giangiotron-button:hover {
+  transform: rotate(360deg);
+  background: linear-gradient(45deg, #03a9f4, #ff5722);
+}
 
-    .big-button:active,
-    .giangiotron-button:active {
-      transform: scale(0.9);
-    }
-
+.big-button:active,
+.giangiotron-button:active {
+  transform: scale(0.9);
+}
 
 .big-button:hover {
-  background: #e64a19;
+  background: #e64a19; /* Sopra c'è già un :hover generale, qui non confligge */
 }
 
+/* ============================ */
+/* AGGIUNTA PER DIVISIONE 50/50 */
+/* ============================ */
 
+/* Rimuovi l'overflow automatico del body, 
+   così controlliamo noi le scroll nelle sezioni. */
+body {
+  height: 100vh;
+  overflow: hidden;
+}
 
-    
+/* Contenitore per dividere la pagina in due sezioni verticali */
+.split-container {
+  /* occuperà tutto lo spazio sotto l'h1 */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* tolgo 120px per lasciare spazio a padding e h1 (regola in base alle tue necessità) */
+  height: calc(100vh - 120px);
+  width: 100%;
+  z-index: 1; /* resta sopra lo sfondo */
+}
+
+/* Sezione top e bottom: ognuna 50% dell’altezza rimasta */
+.top-section, .bottom-section {
+  height: 50%;
+  overflow-y: auto; /* scrollbar se i contenuti superano il 50% */
+  padding: 0 10px;  /* un po' di margine orizzontale */
+}
+
+/* Se vuoi uno sfondo semitrasparente nelle due sezioni (opzionale):
+.top-section {
+  background: rgba(0,0,0,0.3);
+}
+.bottom-section {
+  background: rgba(0,0,0,0.3);
+} */

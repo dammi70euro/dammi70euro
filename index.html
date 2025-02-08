@@ -2,43 +2,50 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dammi 70 euro</title>
   <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
 
-<h1>Dammi 70 euro 💰</h1>
-<ul id="mp3-list"></ul>
+  <!-- Titolo -->
+  <h1>Dammi 70 euro 💰</h1>
 
-<audio id="player" controls preload="none">
-  Il tuo browser non supporta l'elemento audio.
-</audio>
+  <!-- Contenitore che divide la pagina in due sezioni: top (lista mp3) e bottom (bottoni) -->
+  <div class="split-container">
+    <!-- TOP SECTION: lista tracce + player -->
+    <div class="top-section">
+      <ul id="mp3-list"></ul>
+      <audio id="player" controls preload="none">
+        Il tuo browser non supporta l'elemento audio.
+      </audio>
+    </div>
 
-<!-- Pulsanti con emoji -->
-<div class="buttons-container">
-  <a class="big-button" href="seconda.html">😞 Non lo fa 😞</a>
-  <a class="big-button" href="synt.html">🎹 SOGNOTRON 🎹</a>
-  <a class="big-button" href="pippatron.html">PIPPATRON ❄️</a>
-  <a class="big-button" href="giangiotron.html">GIANGIOTRON️🤷‍♂️</a>
-  <a class="big-button" href="sonatron.html">🎶SONATRON😢</a>
-  <a class="big-button" href="Kaustitron.html">Kaustitron 💊</a>
-  <a class="big-button" href="drammatron.html">🥁💊 Drammatron</a>
-  <a class="big-button" href="fototron.html">📸 Fototron 📷</a> <!-- Nuovo bottone -->
-</div>
+    <!-- BOTTOM SECTION: bottoni / strumenti -->
+    <div class="bottom-section">
+      <div class="buttons-container">
+        <a class="big-button" href="seconda.html">😞 Non lo fa 😞</a>
+        <a class="big-button" href="synt.html">🎹 SOGNOTRON 🎹</a>
+        <a class="big-button" href="pippatron.html">PIPPATRON ❄️</a>
+        <a class="big-button" href="giangiotron.html">GIANGIOTRON️🤷‍♂️</a>
+        <a class="big-button" href="sonatron.html">🎶SONATRON😢</a>
+        <a class="big-button" href="Kaustitron.html">Kaustitron 💊</a>
+        <a class="big-button" href="drammatron.html">🥁💊 Drammatron</a>
+        <a class="big-button" href="fototron.html">📸 Fototron 📷</a>
+      </div>
+    </div>
+  </div>
 
-<script src="script.js"></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-1T0P6YVWZH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script src="script.js"></script>
 
-  gtag('config', 'G-1T0P6YVWZH');
-</script>
+  <!-- Google tag (gtag.js) se serve -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1T0P6YVWZH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1T0P6YVWZH');
+  </script>
+
 </body>
-
-
 </html>
