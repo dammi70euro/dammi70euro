@@ -180,9 +180,12 @@ async function playback() {
 
   // Costruisci catena di effetti
   buildEffectsChain(source, audioContext.destination);
-
+  source.connect(audioContext.destination);
   source.start();
   isPlaying = true;
+  source.onended = () => {
+    isPlaying = false;
+  };
 }
 
 /*************************************************************
