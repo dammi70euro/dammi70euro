@@ -4,6 +4,110 @@
   <meta charset="UTF-8" />
   <title>Campionatron - MPC Style</title>
   <link rel="stylesheet" href="Campionatron.css" />
+  <style>
+    /* Esempio di styling per i range che li rende più usabili da mobile */
+    .knobs-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .knob-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 120px;
+    }
+
+    .knob-group label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    /* Contenitore per label + valore */
+    .slider-label {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .slider-value {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    /* Stile base dello slider */
+    input[type="range"] {
+      -webkit-appearance: none;  /* Rimuove lo stile di default su Safari/Chrome */
+      -moz-appearance: none;     /* Rimuove lo stile di default su Firefox */
+      width: 100%;
+      height: 10px;
+      background: #ddd;
+      border-radius: 5px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Stile del "track" per Chrome/Opera/Safari */
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 10px;
+      background: #aaa;
+      border-radius: 5px;
+    }
+
+    /* Stile del "thumb" per Chrome/Opera/Safari */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      background: #555;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin-top: -10px; /* per centrare verticalmente il thumb sul track */
+      cursor: pointer;
+    }
+
+    /* Hover e active sul thumb */
+    input[type="range"]:hover::-webkit-slider-thumb {
+      background: #777;
+    }
+    input[type="range"]:active::-webkit-slider-thumb {
+      background: #999;
+    }
+
+    /* Stile del "track" per Firefox */
+    input[type="range"]::-moz-range-track {
+      height: 10px;
+      background: #aaa;
+      border-radius: 5px;
+    }
+
+    /* Stile del "thumb" per Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      background: #555;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    /* Layout responsive di massima */
+    @media (max-width: 600px) {
+      .knobs-panel {
+        flex-direction: column;
+        align-items: center;
+      }
+      .knob-group {
+        width: 80%;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="mpc-container">
@@ -26,37 +130,120 @@
     <!-- Sezione controlli (slider) -->
     <div class="knobs-panel">
       <div class="knob-group">
-        <label>Time Stretch</label>
-        <input type="range" id="time-stretch" min="0.5" max="2" step="0.01" value="1">
+        <div class="slider-label">
+          <label for="time-stretch">Time Stretch</label>
+          <span id="time-stretch-value" class="slider-value">1</span>
+        </div>
+        <input
+          type="range"
+          id="time-stretch"
+          min="0.5"
+          max="2"
+          step="0.01"
+          value="1"
+          oninput="document.getElementById('time-stretch-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Delay</label>
-        <input type="range" id="delay" min="0" max="1" step="0.01" value="0">
+        <div class="slider-label">
+          <label for="delay">Delay</label>
+          <span id="delay-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="delay"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('delay-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Reverb</label>
-        <input type="range" id="reverb" min="0" max="1" step="0.01" value="0">
+        <div class="slider-label">
+          <label for="reverb">Reverb</label>
+          <span id="reverb-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="reverb"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('reverb-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Distorsion</label>
-        <input type="range" id="distortion" min="0" max="1" step="0.01" value="0">
+        <div class="slider-label">
+          <label for="distortion">Distorsion</label>
+          <span id="distortion-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="distortion"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('distortion-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Gain</label>
-        <input type="range" id="gain" min="0" max="2" step="0.01" value="1">
+        <div class="slider-label">
+          <label for="gain">Gain</label>
+          <span id="gain-value" class="slider-value">1</span>
+        </div>
+        <input
+          type="range"
+          id="gain"
+          min="0"
+          max="2"
+          step="0.01"
+          value="1"
+          oninput="document.getElementById('gain-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Flanger</label>
-        <input type="range" id="flanger" min="0" max="1" step="0.01" value="0">
+        <div class="slider-label">
+          <label for="flanger">Flanger</label>
+          <span id="flanger-value" class="slider-value">0</span>
+        </div>
+        <input
+          type="range"
+          id="flanger"
+          min="0"
+          max="1"
+          step="0.01"
+          value="0"
+          oninput="document.getElementById('flanger-value').textContent = this.value"
+        >
       </div>
+
       <div class="knob-group">
-        <label>Bitcrusher</label>
-        <input type="range" id="bitcrusher" min="1" max="16" step="1" value="16">
+        <div class="slider-label">
+          <label for="bitcrusher">Bitcrusher</label>
+          <span id="bitcrusher-value" class="slider-value">16</span>
+        </div>
+        <input
+          type="range"
+          id="bitcrusher"
+          min="1"
+          max="16"
+          step="1"
+          value="16"
+          oninput="document.getElementById('bitcrusher-value').textContent = this.value"
+        >
       </div>
     </div>
 
     <button id="download" disabled>💾 Download WAV</button>
-	   <!-- NUOVO BOTTONE "VAI A LETTO" -->
+    <!-- NUOVO BOTTONE "VAI A LETTO" -->
     <button id="go-to-bed" class="spectacular-button" onclick="window.location.href='index.html'">
       Vai a letto 🛌💤
     </button>
