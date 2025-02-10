@@ -129,3 +129,35 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 2px #000;
   cursor: pointer;
 }
+.spectacular-button {
+    /* Aspetto generale */
+    background: linear-gradient(45deg, #FF4081, #FF9100);
+    border: none;
+    border-radius: 8px;
+    padding: 1em 2em;
+    color: #fff;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    /* Per far risaltare di più il testo */
+    text-shadow: 0px 1px 3px rgba(0,0,0,0.3);
+    /* Animazione "glow" continua */
+    animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Effetto "glow" */
+@keyframes glow {
+    from {
+        box-shadow: 0 0 8px #FF4081;
+    }
+
+    to {
+        box-shadow: 0 0 20px #FF9100;
+    }
+}
+
+/* Effetto "zoom" al passaggio del mouse */
+.spectacular-button:hover {
+    transform: scale(1.05);
+}
