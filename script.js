@@ -28,11 +28,9 @@ async function fetchMP3Files() {
         file.mimeType === 'audio/mpeg' || file.mimeType === 'audio/wav'
       );
 
-      // Mostriamo al massimo 10 tracce
-      const limitedFiles = audioFiles.slice(0, 10);
 
       // Crea la lista
-      createMP3List(limitedFiles);
+      createMP3List(audioFiles);
 
       // Se c'è un parametro ?play=..., cerchiamo tra queste 10 tracce
       if (autoPlayId) {
@@ -54,6 +52,7 @@ async function fetchMP3Files() {
 // 2. Crea la lista di file audio
 function createMP3List(files) {
   files.forEach(file => {
+    console.log(file.name)
     const li = document.createElement('li');
     li.dataset.id = file.id; // Salviamo l'ID sul <li> per poterlo cercare
 
