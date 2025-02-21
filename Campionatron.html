@@ -3,111 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>Campionatron - MPC Style</title>
-  <link rel="stylesheet" href="Campionatron.css" />
-  <style>
-    /* Esempio di styling per i range che li rende più usabili da mobile */
-    .knobs-panel {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 1rem;
-      justify-content: center;
-    }
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.js"></script>
 
-    .knob-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 120px;
-    }
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.css" />
 
-    .knob-group label {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
 
-    /* Contenitore per label + valore */
-    .slider-label {
-      display: flex;
-      justify-content: center;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
-    .slider-value {
-      font-size: 0.9rem;
-      color: #555;
-    }
-
-    /* Stile base dello slider */
-    input[type="range"] {
-      -webkit-appearance: none;  /* Rimuove lo stile di default su Safari/Chrome */
-      -moz-appearance: none;     /* Rimuove lo stile di default su Firefox */
-      width: 100%;
-      height: 10px;
-      background: #ddd;
-      border-radius: 5px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    /* Stile del "track" per Chrome/Opera/Safari */
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 10px;
-      background: #aaa;
-      border-radius: 5px;
-    }
-
-    /* Stile del "thumb" per Chrome/Opera/Safari */
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 28px;
-      height: 28px;
-      background: #555;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      margin-top: -10px; /* per centrare verticalmente il thumb sul track */
-      cursor: pointer;
-    }
-
-    /* Hover e active sul thumb */
-    input[type="range"]:hover::-webkit-slider-thumb {
-      background: #777;
-    }
-    input[type="range"]:active::-webkit-slider-thumb {
-      background: #999;
-    }
-
-    /* Stile del "track" per Firefox */
-    input[type="range"]::-moz-range-track {
-      height: 10px;
-      background: #aaa;
-      border-radius: 5px;
-    }
-
-    /* Stile del "thumb" per Firefox */
-    input[type="range"]::-moz-range-thumb {
-      width: 28px;
-      height: 28px;
-      background: #555;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      cursor: pointer;
-    }
-
-    /* Layout responsive di massima */
-    @media (max-width: 600px) {
-      .knobs-panel {
-        flex-direction: column;
-        align-items: center;
-      }
-      .knob-group {
-        width: 80%;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="Campionatron.css">
 </head>
 <body>
   <div class="mpc-container">
@@ -115,19 +17,25 @@
     <p class="subtitle">Sampler Style <strong>Akai MPC</strong> con Effetti Reali</p>
     
     <div class="record-section">
-      <button id="start-recording">🔴 Rec</button>
+      <button id="start-recording">🔴 Rec (Mic)</button>
+      <button id="start-other-tab-recording">🔴 Rec (Altra scheda)</button>
       <button id="stop-recording" disabled>🛑 Stop</button>
     </div>
 
-    <!-- Waveform canvas -->
-    <canvas id="waveform"></canvas>
+    <canvas id="waveform" width="600" height="150"></canvas>
 
     <div class="play-section">
+	<div class="slider-container">
+  <label for="audio-range">Seleziona intervallo</label>
+  <div id="audio-range"></div>
+  <span id="start-time">Start: 0s</span>
+  <span id="end-time">End: 0s</span>
+</div>
       <button id="playback" disabled>▶️ Play</button>
       <button id="stop-playback" disabled>⏹ Stop</button>
+      <button id="loop-toggle" disabled>🔁 Loop Off</button>
     </div>
 
-    <!-- Sezione controlli (slider) -->
     <div class="knobs-panel">
       <div class="knob-group">
         <div class="slider-label">
@@ -243,12 +151,12 @@
     </div>
 
     <button id="download" disabled>💾 Download WAV</button>
-    <!-- NUOVO BOTTONE "VAI A LETTO" -->
     <button id="go-to-bed" class="spectacular-button" onclick="window.location.href='index.html'">
       Vai a letto 🛌💤
     </button>
   </div>
 
   <script src="Campionatron.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.6.0/dist/nouislider.min.js"></script>
 </body>
 </html>

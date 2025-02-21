@@ -5,28 +5,36 @@
   padding: 0;
 }
 
-/* Corpo pagina scuro */
+/* Corpo pagina stile Matrix */
 body {
-  background-color: #2f2f2f;
-  color: #ddd;
+  background-color: #000;
+  color: #00ff00; /* Verde tipico di Matrix */
   font-family: "Verdana", sans-serif;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #000000, #0c1c0c);
+  overflow: hidden;
+  height: 100vh;
 }
 
 /* Contenitore stile MPC */
 .mpc-container {
-  width: 720px;
+  width: 80%;
+  max-width: 720px;
   margin: 40px auto;
-  background-color: #3a3a3a;
-  border: 3px solid #555;
-  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(0, 255, 0, 0.4);
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+  backdrop-filter: blur(5px);
 }
 
+/* Titoli e sottotitoli */
 .mpc-container h1 {
   text-align: center;
-  margin-bottom: 5px;
-  color: #ffcccc;
+  margin-bottom: 10px;
+  color: #00ff00;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
 }
 
 .mpc-container .subtitle {
@@ -34,7 +42,7 @@ body {
   margin-top: 0;
   margin-bottom: 20px;
   font-style: italic;
-  color: #bbb;
+  color: #00cc00;
   font-size: 0.9em;
 }
 
@@ -45,23 +53,23 @@ body {
   margin-bottom: 15px;
 }
 
-/* Pulsanti stile MPC */
+/* Pulsanti stile MPC con animazioni */
 button {
   font-size: 1rem;
-  background: linear-gradient(to bottom, #555 0%, #444 100%);
-  color: #eee;
-  border: 2px solid #777;
+  background: linear-gradient(135deg, #1bff1b, #00b300);
+  color: #000;
+  border: 2px solid #00cc00;
   border-radius: 4px;
-  padding: 10px 18px;
+  padding: 12px 24px;
   cursor: pointer;
-  margin: 5px;
-  box-shadow: inset 0 0 0px #999;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  margin: 8px;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+  transition: all 0.3s ease-in-out;
 }
 
 button:active {
-  background: linear-gradient(to top, #555 0%, #444 100%);
-  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.6);
+  background: linear-gradient(135deg, #00b300, #00ff1a);
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.8);
 }
 
 button:disabled {
@@ -69,95 +77,137 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.slider-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#audio-range {
+  width: 80%;
+  margin: 0 auto;
+}
+
+span {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+
+
+
 /* Canvas per la waveform */
 #waveform {
   display: block;
-  margin: 0 auto 20px auto;
-  background: #1b1b1b;
-  border: 2px solid #888;
-  width: 680px;
+  margin: 20px auto;
+  background: #111;
+  border: 2px solid #00ff00;
+  width: 100%;
+  max-width: 680px;
   height: 100px;
   box-shadow: inset 0 0 10px #000;
 }
+.slider-label{
+	margin-bottom: 20px
+}
 
-/* Slider (knobs) */
+/* Slider con effetto verde neon */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #222;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #555;
+  border-radius: 5px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #00ff00;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 255, 0, 0.6);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: #00cc00;
+  transform: scale(1.2);
+}
+input[type="range"]:active::-webkit-slider-thumb {
+  background: #009900;
+}
+
+/* Knobs panel responsive */
 .knobs-panel {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 20px;
   margin-bottom: 20px;
+  gap: 1rem;
 }
 
 .knob-group {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 10px 15px;
+  min-width: 120px;
 }
 
-.knob-group label {
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #ccc;
-}
-
-/* Stile slider base */
-input[type="range"] {
-  -webkit-appearance: none;
-  width: 100px;
-  height: 6px;
-  background: #666;
-  border-radius: 3px;
-  outline: none;
-  transition: opacity 0.2s;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  background: #ccc;
-  border-radius: 50%;
-  box-shadow: 0 0 2px #000;
-  cursor: pointer;
-}
-input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  background: #ccc;
-  border-radius: 50%;
-  box-shadow: 0 0 2px #000;
-  cursor: pointer;
-}
+/* Animazioni per il bottone Matrix */
 .spectacular-button {
-    /* Aspetto generale */
-    background: linear-gradient(45deg, #FF4081, #FF9100);
-    border: none;
-    border-radius: 8px;
-    padding: 1em 2em;
-    color: #fff;
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    /* Per far risaltare di più il testo */
-    text-shadow: 0px 1px 3px rgba(0,0,0,0.3);
-    /* Animazione "glow" continua */
-    animation: glow 1.5s ease-in-out infinite alternate;
+  background: linear-gradient(45deg, #00ff00, #00cc00);
+  border: none;
+  border-radius: 8px;
+  padding: 1em 2em;
+  color: #000;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-shadow: 0px 0px 6px rgba(0, 255, 0, 0.8);
+  animation: glowing 1.5s ease-in-out infinite alternate;
 }
 
-/* Effetto "glow" */
-@keyframes glow {
-    from {
-        box-shadow: 0 0 8px #FF4081;
-    }
-
-    to {
-        box-shadow: 0 0 20px #FF9100;
-    }
-}
-
-/* Effetto "zoom" al passaggio del mouse */
 .spectacular-button:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #00ff00;
 }
+
+@keyframes glowing {
+  0% {
+    box-shadow: 0 0 10px #00ff00;
+  }
+  100% {
+    box-shadow: 0 0 30px #00cc00;
+  }
+}
+
+/* Effetti generali di transizione sul contenitore */
+.mpc-container {
+  transition: all 0.3s ease-in-out;
+}
+.mpc-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+}
+
+/* Layout responsive */
+@media (max-width: 600px) {
+  .knobs-panel {
+    flex-direction: column;
+    align-items: center;
+  }
+  .knob-group {
+    width: 80%;
+  }
+}
+

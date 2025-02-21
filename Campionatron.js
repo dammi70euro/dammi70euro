@@ -1,32 +1,36 @@
 /*************************************************************
- * Campionatron.js - Registrazione manuale in WAV
- * Funziona su PC, iOS, Android, ecc.
+ * Campionatron.js
+ * - Registrazione e riproduzione funzionante
+ * - Stop ferma anche l'audio in riproduzione
+ * - Waveform rimane anche dopo Play
+ * - Loop On/Off
+ * - Usa ScriptProcessorNode (deprecato) ma funziona
  *************************************************************/
 
-// Variabili di stato
+// Stato
 let audioContext;
 let micStream;
 let scriptProcessor;
 
 let isRecording = false;
-let recordedSamples = [];  // array di Float32Array
-let numSamples = 0;        // contatore dei campioni totali
-let sampleRate = 44100;    // sample rate preferito (verrà adattato)
+let recordedSamples = [];
+let numSamples = 0;
+let sampleRate = 44100;
 
-// WAV generato
 let recordedWavBlob = null;
-
-// AudioBuffer decodificato dal WAV
 let audioBuffer = null;
 let source = null;
 let isPlaying = false;
+let isLooping = false;
 
-// Riferimenti DOM
-const startBtn    = document.getElementById('start-recording');
-const stopBtn     = document.getElementById('stop-recording');
-const playBtn     = document.getElementById('playback');
-const stopPlayBtn = document.getElementById('stop-playback');
-const downloadBtn = document.getElementById('download');
+// DOM
+const startBtn       = document.getElementById('start-recording');
+const otherTabBtn    = document.getElementById('start-other-tab-recording');
+const stopBtn        = document.getElementById('stop-recording');
+const playBtn        = document.getElementById('playback');
+const stopPlayBtn    = document.getElementById('stop-playback');
+const loopToggleBtn  = document.getElementById('loop-toggle');
+const downloadBtn    = document.getElementById('download');
 
 const timeStretchSlider = document.getElementById('time-stretch');
 const delaySlider       = document.getElementById('delay');
@@ -37,183 +41,255 @@ const flangerSlider     = document.getElementById('flanger');
 const bitcrusherSlider  = document.getElementById('bitcrusher');
 
 const waveformCanvas = document.getElementById('waveform');
-const waveformCtx = waveformCanvas.getContext('2d');
-
-let animationId;
-let analyzerNode;
+const waveformCtx    = waveformCanvas.getContext('2d');
 
 // Effetti
 let delayNode, convolverNode, distortionNode, gainNode, flangerDelay, bitcrusherNode;
 let flangerOsc, flangerGain;
 
 /*************************************************************
- * EventListeners
+ * Eventi
  *************************************************************/
 startBtn.addEventListener('click', startRecording);
+otherTabBtn.addEventListener('click', startOtherTabRecording);
 stopBtn.addEventListener('click', stopRecording);
+
 playBtn.addEventListener('click', playback);
 stopPlayBtn.addEventListener('click', stopPlayback);
+loopToggleBtn.addEventListener('click', toggleLoop);
+
 downloadBtn.addEventListener('click', downloadWav);
 
-[timeStretchSlider, delaySlider, reverbSlider, distortionSlider, 
- gainSlider, flangerSlider, bitcrusherSlider]
-.forEach(s => s.addEventListener('input', updateEffects));
+[
+  timeStretchSlider, delaySlider, reverbSlider,
+  distortionSlider, gainSlider, flangerSlider, bitcrusherSlider
+].forEach(s => s.addEventListener('input', updateEffects));
 
 
 /*************************************************************
- * START Recording: usa getUserMedia + ScriptProcessor
+ * Avvio registrazione microfono
  *************************************************************/
 async function startRecording() {
   if (isRecording) return;
-
   isRecording = true;
+
   startBtn.disabled = true;
+  otherTabBtn.disabled = true;
   stopBtn.disabled = false;
 
-  // Disattiva riproduzione / download
   playBtn.disabled = true;
   stopPlayBtn.disabled = true;
+  loopToggleBtn.disabled = true;
   downloadBtn.disabled = true;
-  
-  // Resetta array e contatori
-  recordedSamples = [];
-  numSamples = 0;
-  recordedWavBlob = null;
-  audioBuffer = null;
 
-  // Crea (o riattiva) AudioContext
+  initAudioContextForRecording();
+
+  // Chiedi mic
+  micStream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: false
+  });
+  recordFromStream(micStream);
+}
+
+
+/*************************************************************
+ * Avvio registrazione dall'altra scheda
+ *************************************************************/
+async function startOtherTabRecording() {
+  if (isRecording) return;
+  isRecording = true;
+
+  startBtn.disabled = true;
+  otherTabBtn.disabled = true;
+  stopBtn.disabled = false;
+
+  playBtn.disabled = true;
+  stopPlayBtn.disabled = true;
+  loopToggleBtn.disabled = true;
+  downloadBtn.disabled = true;
+
+  initAudioContextForRecording();
+
+  const systemStream = await navigator.mediaDevices.getDisplayMedia({
+    video: true,
+    audio: true
+  });
+  recordFromStream(systemStream);
+}
+
+
+/*************************************************************
+ * Inizializzazione AudioContext
+ *************************************************************/
+function initAudioContextForRecording() {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   } else {
     if (audioContext.state === 'suspended') {
-      await audioContext.resume();
+      audioContext.resume();
     }
   }
-
-  // Chiedi microfono
-  micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-
-  // Crea un MediaStreamAudioSourceNode
-  const micSource = audioContext.createMediaStreamSource(micStream);
-  
-  // Sample rate effettivo dell'AudioContext
+  recordedSamples = [];
+  numSamples = 0;
+  recordedWavBlob = null;
+  audioBuffer = null;
   sampleRate = audioContext.sampleRate;
-
-  // Crea ScriptProcessor per intercettare i campioni
-  // (bufferSize di 4096 e 1 canale in/1 out)
-  scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-
-  // On audio process
-  scriptProcessor.onaudioprocess = function(e) {
-    if (!isRecording) return;
-    const input = e.inputBuffer.getChannelData(0);
-    // Copia i campioni in un Float32Array dedicato
-    recordedSamples.push(new Float32Array(input));
-    numSamples += input.length;
-  };
-
-  // Collega nodi
-  micSource.connect(scriptProcessor);
-  scriptProcessor.connect(audioContext.destination); // per “attivare” la callback
 }
 
+
 /*************************************************************
- * STOP Recording
+ * recordFromStream
+ * Configura lo ScriptProcessorNode (deprecato)
+ *************************************************************/
+function recordFromStream(stream) {
+  micStream = stream;
+  const sourceNode = audioContext.createMediaStreamSource(micStream);
+
+  // ScriptProcessor
+  scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+  scriptProcessor.onaudioprocess = (e) => {
+    if (!isRecording) return;
+    const inputData = e.inputBuffer.getChannelData(0);
+    recordedSamples.push(new Float32Array(inputData));
+    numSamples += inputData.length;
+  };
+
+  // Per far funzionare lo ScriptProcessor, deve essere connesso a un nodo "attivo"
+  // Creiamo un gain a 0, cosi' non sentiamo la diretta
+  const zeroGain = audioContext.createGain();
+  zeroGain.gain.value = 0;
+
+  // Collegamenti
+  sourceNode.connect(scriptProcessor);
+  scriptProcessor.connect(zeroGain);
+  zeroGain.connect(audioContext.destination);
+
+  console.log("Recording started. SampleRate:", audioContext.sampleRate);
+}
+
+
+/*************************************************************
+ * STOP registrazione
  *************************************************************/
 function stopRecording() {
   if (!isRecording) return;
   isRecording = false;
 
   startBtn.disabled = false;
+  otherTabBtn.disabled = false;
   stopBtn.disabled = true;
 
-  // Disconnetti la sorgente e lo scriptProcessor
+  // Ferma eventuale riproduzione
+  stopPlayback();
+
   if (scriptProcessor) {
     scriptProcessor.disconnect();
     scriptProcessor.onaudioprocess = null;
     scriptProcessor = null;
   }
+
   if (micStream) {
     micStream.getTracks().forEach(track => track.stop());
     micStream = null;
   }
 
-  // Crea WAV dai campioni registrati
+  if (numSamples === 0) {
+    console.warn("Nessun campione registrato.");
+    return;
+  }
+
+  // Encodiamo in WAV
   recordedWavBlob = encodeWAV(recordedSamples, numSamples, sampleRate);
 
-  // Decodifica WAV in audioBuffer
+  // Decodifica
   const reader = new FileReader();
   reader.onload = async () => {
-    const arrayBuff = reader.result;
     try {
+      const arrayBuff = reader.result;
       audioBuffer = await audioContext.decodeAudioData(arrayBuff);
-      // Disegna waveform statica
       drawWaveform(audioBuffer);
-      // Abilita pulsanti
+
       playBtn.disabled = false;
       stopPlayBtn.disabled = false;
+      loopToggleBtn.disabled = false;
       downloadBtn.disabled = false;
+
+      console.log("Registrazione pronta. Durata:", audioBuffer.duration.toFixed(2), "s");
     } catch (err) {
-      console.error("Errore decodeAudioData: ", err);
-      alert("Errore nella decodifica del WAV registrato");
+      console.error("Errore decodeAudioData:", err);
+      alert("Errore nella decodifica del WAV");
     }
   };
   reader.readAsArrayBuffer(recordedWavBlob);
 }
 
+
 /*************************************************************
- * PLAYBACK
+ * PLAY
  *************************************************************/
-async function playback() {
-  if (!audioBuffer) return;
-  if (audioContext.state === 'suspended') {
-    await audioContext.resume();
+
+
+
+function testTone() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
 
-  stopPlayback(); // ferma eventuale riproduzione precedente
+  const osc = audioContext.createOscillator();
+  osc.frequency.value = 440; // La4
+  const gainTest = audioContext.createGain();
+  gainTest.gain.value = 0.1; // un volume moderato
 
-  source = audioContext.createBufferSource();
-  source.buffer = audioBuffer;
+  osc.connect(gainTest).connect(audioContext.destination);
+  osc.start();
 
-  // Time stretch
-  source.playbackRate.value = parseFloat(timeStretchSlider.value);
-
-  // Costruisci catena di effetti
-  buildEffectsChain(source, audioContext.destination);
-  source.connect(audioContext.destination);
-  source.start();
-  isPlaying = true;
-  source.onended = () => {
-    isPlaying = false;
-  };
-}
+  setTimeout(() => {
+    osc.stop();
+    osc.disconnect();
+    console.log("Test tone ended");
+  }, 2000); // suona 2 secondi
+} 
 
 /*************************************************************
- * STOP Playback
+ * STOP PLAY
  *************************************************************/
 function stopPlayback() {
   if (source && isPlaying) {
     source.stop();
     source.disconnect();
     source = null;
-    isPlaying = false;
   }
-  cancelAnimationFrame(animationId);
+  isPlaying = false;
 }
 
+
 /*************************************************************
- * updateEffects: ricostruisce la catena se stiamo già suonando
+ * toggleLoop
+ *************************************************************/
+function toggleLoop() {
+  isLooping = !isLooping;
+  console.log('isLooping'+isLooping); 
+  loopToggleBtn.textContent = isLooping ? "🔁 Loop On" : "🔁 Loop Off";
+  if (source) {
+	  console.log('source'+source); 
+    source.loop = isLooping;
+  }
+}
+
+
+/*************************************************************
+ * updateEffects
  *************************************************************/
 function updateEffects() {
   if (isPlaying && source) {
-    // Cambiare playbackRate on the fly
     source.playbackRate.value = parseFloat(timeStretchSlider.value);
-    // Per alcuni effetti (distorsion, bitcrusher, etc.)
-    // è più semplice ricostruire l'intero grafo:
     stopPlayback();
     playback();
   }
 }
+
 
 /*************************************************************
  * buildEffectsChain
@@ -223,96 +299,14 @@ function buildEffectsChain(inputNode, outputNode) {
   delayNode = audioContext.createDelay(5.0);
   delayNode.delayTime.value = parseFloat(delaySlider.value);
 
-  // Reverb
-  convolverNode = audioContext.createConvolver();
-  convolverNode.buffer = generateImpulseResponse(audioContext, 2, 2);
-  const reverbGain = audioContext.createGain();
-  reverbGain.gain.value = parseFloat(reverbSlider.value);
-
-  // Distorsione
-  distortionNode = audioContext.createWaveShaper();
-  distortionNode.curve = makeDistortionCurve(parseFloat(distortionSlider.value) * 400);
-  distortionNode.oversample = '4x';
-
-  // Gain
-  gainNode = audioContext.createGain();
-  gainNode.gain.value = parseFloat(gainSlider.value);
-
-  // Flanger
-  flangerDelay = audioContext.createDelay();
-  flangerDelay.delayTime.value = 0.005;
-  flangerGain = audioContext.createGain();
-  flangerGain.gain.value = parseFloat(flangerSlider.value) * 0.004;
-
-  flangerOsc = audioContext.createOscillator();
-  flangerOsc.type = 'sine';
-  flangerOsc.frequency.value = 0.25;
-  flangerOsc.connect(flangerGain).connect(flangerDelay.delayTime);
-  flangerOsc.start();
-
-  // Bitcrusher
-  bitcrusherNode = createBitcrusherNode(audioContext, parseInt(bitcrusherSlider.value));
-
-  // Analyser
-  analyzerNode = audioContext.createAnalyser();
-  analyzerNode.fftSize = 2048;
-
-  // Collegamenti
+  // Connetti solo il delay
   inputNode.connect(delayNode);
-  delayNode.connect(distortionNode);
-  distortionNode.connect(flangerDelay);
-  flangerDelay.connect(bitcrusherNode);
-  bitcrusherNode.connect(convolverNode);
-  convolverNode.connect(reverbGain);
-  reverbGain.connect(gainNode);
-  gainNode.connect(analyzerNode);
-  analyzerNode.connect(outputNode);
-
-  animateWaveform();
+  delayNode.connect(outputNode);
 }
 
-/*************************************************************
- * animateWaveform: disegna la waveform in "tempo reale"
- *************************************************************/
-function animateWaveform() {
-  const bufferLength = analyzerNode.fftSize;
-  const dataArray = new Uint8Array(bufferLength);
-
-  function draw() {
-    animationId = requestAnimationFrame(draw);
-
-    analyzerNode.getByteTimeDomainData(dataArray);
-
-    waveformCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-    waveformCtx.fillStyle = '#1b1b1b';
-    waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-
-    waveformCtx.lineWidth = 2;
-    waveformCtx.strokeStyle = '#00ff00';
-    waveformCtx.beginPath();
-
-    const sliceWidth = waveformCanvas.width / bufferLength;
-    let x = 0;
-
-    for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = v * (waveformCanvas.height / 2) + (waveformCanvas.height / 2);
-
-      if (i === 0) {
-        waveformCtx.moveTo(x, y);
-      } else {
-        waveformCtx.lineTo(x, y);
-      }
-      x += sliceWidth;
-    }
-
-    waveformCtx.stroke();
-  }
-  draw();
-}
 
 /*************************************************************
- * Disegno waveform statica (dopo la registrazione)
+ * Disegna waveform statica
  *************************************************************/
 function drawWaveform(buffer) {
   const data = buffer.getChannelData(0);
@@ -333,7 +327,7 @@ function drawWaveform(buffer) {
     let min = 1.0;
     let max = -1.0;
     for (let j = 0; j < step; j++) {
-      const idx = (i * step) + j;
+      const idx = i * step + j;
       if (idx < data.length) {
         const val = data[idx];
         if (val < min) min = val;
@@ -345,26 +339,46 @@ function drawWaveform(buffer) {
   waveformCtx.stroke();
 }
 
+
 /*************************************************************
- * DOWNLOAD WAV
+ * downloadWav
  *************************************************************/
 function downloadWav() {
-  if (!recordedWavBlob) return;
-  const url = URL.createObjectURL(recordedWavBlob);
+  if (!audioBuffer) return;
+  
+  // Calcola gli indici iniziale e finale in base alla lunghezza totale dei campioni
+  const startSample = Math.floor(audioStart * audioBuffer.length);
+  const endSample = Math.floor(audioEnd * audioBuffer.length);
+  const croppedLength = endSample - startSample;
+  
+  if (croppedLength <= 0) {
+    alert("Selezione non valida: la fine deve essere maggiore dell'inizio.");
+    return;
+  }
+  
+  // Estrai i campioni dal canale 0 (mono). Se l'audio è stereo, occorrerebbe estendere l'estrazione ad entrambi i canali.
+  const channelData = audioBuffer.getChannelData(0);
+  const croppedData = channelData.slice(startSample, endSample);
+  
+  // Codifica in WAV utilizzando la funzione esistente.
+  const wavBlob = encodeWAV([croppedData], croppedData.length, audioBuffer.sampleRate);
+  
+  // Scarica il file WAV
+  const url = URL.createObjectURL(wavBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'campionatron_recorded.wav';
+  a.download = 'campionatron_cropped.wav';
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
   URL.revokeObjectURL(url);
 }
 
+
 /*************************************************************
- * encodeWAV: converte array di Float32 in un Blob WAV 16bit mono
+ * encodeWAV
  *************************************************************/
 function encodeWAV(chunks, totalLength, sRate) {
-  // Uniamo i frammenti in un unico Float32Array
   const buffer = new Float32Array(totalLength);
   let offset = 0;
   for (let i = 0; i < chunks.length; i++) {
@@ -372,53 +386,39 @@ function encodeWAV(chunks, totalLength, sRate) {
     offset += chunks[i].length;
   }
 
-  // Creiamo un ArrayBuffer per l’header + data PCM
-  // 44 byte di header, poi 2 bytes per campione
-  const bytesPerSample = 2; // 16 bit
-  const blockAlign = 1 * bytesPerSample; // 1 canale * 2 bytes
+  const bytesPerSample = 2;
+  const blockAlign = bytesPerSample; // 1 canale * 2 bytes
   const wavBuffer = new ArrayBuffer(44 + totalLength * bytesPerSample);
   const view = new DataView(wavBuffer);
 
-  // helper per scrivere stringhe
-  function writeString(v, offset, str) {
+  function writeString(v, o, str) {
     for (let i = 0; i < str.length; i++) {
-      v.setUint8(offset + i, str.charCodeAt(i));
+      v.setUint8(o + i, str.charCodeAt(i));
     }
   }
 
-  // ChunkID "RIFF"
+  // RIFF
   writeString(view, 0, 'RIFF');
-  // ChunkSize = 36 + data
   view.setUint32(4, 36 + totalLength * bytesPerSample, true);
-  // Format = "WAVE"
+  // WAVE
   writeString(view, 8, 'WAVE');
-  // Subchunk1ID = "fmt "
+  // fmt
   writeString(view, 12, 'fmt ');
-  // Subchunk1Size = 16 per PCM
   view.setUint32(16, 16, true);
-  // AudioFormat = 1 (PCM)
   view.setUint16(20, 1, true);
-  // NumChannels = 1
   view.setUint16(22, 1, true);
-  // SampleRate
   view.setUint32(24, sRate, true);
-  // ByteRate = SampleRate * NumChannels * bytesPerSample
   view.setUint32(28, sRate * blockAlign, true);
-  // BlockAlign = NumChannels * bytesPerSample
   view.setUint16(32, blockAlign, true);
-  // BitsPerSample
   view.setUint16(34, 16, true);
-  // Subchunk2ID = "data"
+  // data
   writeString(view, 36, 'data');
-  // Subchunk2Size = totalLength * bytesPerSample
   view.setUint32(40, totalLength * bytesPerSample, true);
 
-  // Scriviamo i campioni
+  // Campioni
   let pos = 44;
   for (let i = 0; i < totalLength; i++) {
-    // clamp da -1 a 1
     let sample = Math.max(-1, Math.min(1, buffer[i]));
-    // converto a int16
     sample = sample < 0 ? sample * 32768 : sample * 32767;
     view.setInt16(pos, sample, true);
     pos += 2;
@@ -427,8 +427,9 @@ function encodeWAV(chunks, totalLength, sRate) {
   return new Blob([wavBuffer], { type: 'audio/wav' });
 }
 
+
 /*************************************************************
- * GENERAZIONE IMPULSO PER REVERB
+ * generateImpulseResponse
  *************************************************************/
 function generateImpulseResponse(ctx, duration, decay) {
   const sr = ctx.sampleRate;
@@ -436,7 +437,7 @@ function generateImpulseResponse(ctx, duration, decay) {
   const impulse = ctx.createBuffer(2, length, sr);
 
   for (let ch = 0; ch < 2; ch++) {
-    let channelData = impulse.getChannelData(ch);
+    const channelData = impulse.getChannelData(ch);
     for (let i = 0; i < length; i++){
       channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
     }
@@ -444,8 +445,9 @@ function generateImpulseResponse(ctx, duration, decay) {
   return impulse;
 }
 
+
 /*************************************************************
- * DISTORTION CURVE
+ * makeDistortionCurve
  *************************************************************/
 function makeDistortionCurve(amount) {
   const n_samples = 256;
@@ -459,13 +461,15 @@ function makeDistortionCurve(amount) {
   return curve;
 }
 
+
 /*************************************************************
- * BITCRUSHER
+ * createBitcrusherNode
+ * (usa ScriptProcessor, produce warning di deprecazione)
  *************************************************************/
 function createBitcrusherNode(context, bits) {
   const node = context.createScriptProcessor(4096, 1, 1);
   let phaser = 0;
-  let increment = 0.002; 
+  let increment = 0.002;
 
   node.onaudioprocess = (e) => {
     const input = e.inputBuffer.getChannelData(0);
@@ -478,9 +482,121 @@ function createBitcrusherNode(context, bits) {
         phaser -= 1.0;
         output[i] = step * Math.floor(input[i] / step + 0.5);
       } else {
-        output[i] = output[i - 1] || 0;
+        output[i] = (i > 0) ? output[i - 1] : 0;
       }
     }
   };
   return node;
 }
+
+let audioStart = 0;
+let audioEnd = 0;
+
+// Configura lo slider con due maniglie (start e end)
+const slider = document.getElementById('audio-range');
+const startTimeLabel = document.getElementById('start-time');
+const endTimeLabel = document.getElementById('end-time');
+
+noUiSlider.create(slider, {
+  start: [0, 0], // Inizia con entrambi i puntatori a 0
+  range: {
+    'min': 0,
+    'max': 1
+  },
+  connect: true, // Mostra la parte selezionata
+  step: 0.01,
+  tooltips: true, // Mostra il tooltip al passaggio del mouse
+  format: {
+    to: value => value.toFixed(2),
+    from: value => parseFloat(value)
+  }
+});
+
+// Aggiorna start e end al cambiare dello slider
+slider.noUiSlider.on('update', function(values) {
+  audioStart = parseFloat(values[0]);
+  audioEnd = parseFloat(values[1]);
+  console.log(audioStart)
+  console.log(audioEnd)
+  
+  // Aggiorna il testo dei valori
+  startTimeLabel.textContent = `Start: ${audioStart.toFixed(2)}s`;
+  endTimeLabel.textContent = `End: ${audioEnd.toFixed(2)}s`;
+});
+
+
+
+
+
+async function playback() {
+  if (!audioBuffer) {
+    console.warn("No audioBuffer available, cannot play.");
+    return;
+  }
+
+  if (audioContext.state === 'suspended') {
+    console.log("AudioContext is suspended, calling resume()...");
+    await audioContext.resume();
+    console.log("AudioContext state after resume:", audioContext.state);
+  }
+
+  stopPlayback();
+
+  // Crea la sorgente audio
+  source = audioContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.playbackRate.value = parseFloat(timeStretchSlider.value);
+  console.log("playlooping:" + isLooping);
+
+  // Imposta la catena degli effetti
+  buildEffectsChain(source, audioContext.destination);
+
+  // Calcola i secondi di inizio e fine in base alla lunghezza totale
+  const startTime = audioStart * audioBuffer.duration;  // Inizio in secondi
+  const endTime = audioEnd * audioBuffer.duration;      // Fine in secondi
+  const duration = endTime - startTime;                 // Durata in secondi
+
+  console.log('Start time (in sec):', startTime);
+  console.log('End time (in sec):', endTime);
+  console.log('Duration:', duration);
+
+  // Avvia la riproduzione dalla posizione specificata con la durata
+  source.start(0, startTime, duration);
+
+  // Gestione del loop manuale
+  if (isLooping) {
+    source.onended = () => {
+      console.log("Looping...");
+      playback();  // Rilancia la funzione playback per far partire di nuovo il loop
+    };
+  } else {
+    source.onended = () => {
+      isPlaying = false;
+      console.log("Playback ended.");
+    };
+  }
+
+  isPlaying = true;
+  
+  console.log("Playback started successfully.");
+}
+
+
+
+
+
+
+
+
+
+
+// STOP playback
+function stopPlayback() {
+  if (source && isPlaying) {
+    source.stop();
+    source.disconnect();
+    source = null;
+  }
+  isPlaying = false;
+}
+
