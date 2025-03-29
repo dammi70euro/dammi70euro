@@ -5,28 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dammi 70 euro</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .search-container {
+      display: none; /* Nasconde la ricerca su mobile */
+      text-align: center;
+      margin: 20px auto;
+    }
+    
+    .search-box {
+      width: 60%;
+      max-width: 500px;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+    }
+    
+    .search-button {
+      padding: 10px 15px;
+      margin-left: 5px;
+      font-size: 16px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    
+    .search-button:hover {
+      background-color: #0056b3;
+    }
+    
+    @media (min-width: 768px) {
+      .search-container {
+        display: block;
+      }
+    }
+  </style>
 </head>
 <body>
-
   <h1>Dammi 70 euro 💰</h1>
   
-  <!-- Contenitore che divide la pagina in due sezioni verticali -->
+  <!-- Box di ricerca per PC -->
+  <div class="search-container">
+    <form action="https://www.google.com/search" method="GET" target="_blank">
+      <input type="text" name="q" class="search-box" placeholder="Cerca su Google...">
+      <button type="submit" class="search-button">🔍</button>
+    </form>
+  </div>
+  
   <div class="split-container">
-    <!-- TOP SECTION: Player fisso e lista tracce -->
     <div class="top-section">
-      
-      <!-- Player sempre visibile (sticky in alto) -->
       <div class="player-container">
         <audio id="player" controls preload="none">
           Il tuo browser non supporta l'elemento audio.
         </audio>
       </div>
-
-      <!-- Lista delle tracce -->
       <ul id="mp3-list"></ul>
     </div>
-
-    <!-- BOTTOM SECTION: Bottoni -->
     <div class="bottom-section">
       <div class="buttons-container">
         <a class="big-button" href="seconda.html">😞 Non lo fa 😞</a>
@@ -37,14 +74,12 @@
         <a class="big-button" href="Kaustitron.html">Kaustitron 💊</a>
         <a class="big-button" href="drammatron.html">🥁💊 Drammatron</a>
         <a class="big-button" href="fototron.html">📸 Fototron 📷</a>
-		<a class="big-button" href="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
+        <a class="big-button" href="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
       </div>
     </div>
   </div>
-
+  
   <script src="script.js"></script>
-
-  <!-- Google tag (gtag.js) se serve -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-1T0P6YVWZH"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -52,6 +87,5 @@
     gtag('js', new Date());
     gtag('config', 'G-1T0P6YVWZH');
   </script>
-
 </body>
 </html>
