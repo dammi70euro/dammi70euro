@@ -14,6 +14,22 @@ const autoPlayId = urlParams.get('play');
 // Variabile dove salviamo la traccia che serve far partire in autoplay
 let fileToAutoPlay = null;
 
+// Aggiungi un event listener per controllare l'audio con la barra spaziatrice
+document.addEventListener('keydown', function(event) {
+  // Controlla se il tasto premuto è la barra spaziatrice (codice 32)
+  if (event.keyCode === 32 || event.code === 'Space') {
+    // Previeni il comportamento predefinito (scroll della pagina)
+    event.preventDefault();
+    
+    // Se il player è in pausa, avvia la riproduzione, altrimenti metti in pausa
+    if (player.paused) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }
+});
+
 // 1. Recupera la lista dei file da Google Drive
 async function fetchMP3Files() {
   try {

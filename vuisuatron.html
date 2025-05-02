@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Visual Techno</title>
+  <style>
+    /* Rimuove margini e padding per avere un canvas a schermo intero */
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Evita eventuali scrollbar */
+      background: black; /* Colore di sfondo (se serve) */
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas"></canvas>
+
+  <script>
+    // Ottieni il riferimento al canvas e al suo contesto 2D
+    const canvas = document.getElementById("myCanvas");
+    const ctx = canvas.getContext("2d");
+    
+    // Imposta le dimensioni del canvas a quelle della finestra del browser
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Al ridimensionamento della finestra, aggiorna le dimensioni del canvas
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    let time = 0; // Un contatore per animare nel tempo
+    
+    // Questa funzione disegna il frame successivo
+    function draw() {
+      // Aggiungiamo un velo nero semi-trasparente per creare l'effetto di "scia"
+      // Cambia l'alpha (0.05 -> 0.1, ecc.) per modificare la persistenza dell’immagine
+      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Salviamo il contesto e traduciamo l'origine nel centro del canvas
+      ctx.save();
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+
+      // Numero di elementi da disegnare
+      const numShapes = 300;
+
+      for (let i = 0; i < numShapes; i++) {
+        // L'angolo di ogni forma
+        let angle = i * 0.2 + time * 0.02; 
+        // Il raggio dal centro
+        let radius = i * 2;              
+
+        // Calcoliamo le coordinate x, y
+        let x = radius * Math.cos(angle);
+        let y = radius * Math.sin(angle);
+
+        // Generiamo una tonalità di colore in HSL che varia col tempo e con l’indice
+        let hue = (i + time) % 360; // colore ciclico tra 0 e 360
+        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+
+        // Disegniamo un piccolo cerchio
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Incrementiamo il contatore per l'animazione
+      time++;
+
+      // Richiamiamo la funzione al prossimo frame
+      requestAnimationFrame(draw);
+    }
+
+    // Avviamo l'animazione
+    draw();
+  </script>
+</body>
+</html>

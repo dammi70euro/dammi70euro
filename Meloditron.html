@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Genera Melodia Carillon</title>
+</head>
+<body>
+  <h1>Genera Melodia Carillon</h1>
+  <button id="generateBtn">Genera e Scarica WAV</button>
+  <script>
+    // Parametri
+    const sampleRate = 44100;
+    const bpm = 100;
+    const beatDuration = 60 / bpm; // durata di un battito in secondi
+    const barDuration = beatDuration * 4; // battuta in 4/4
+    const noteDuration = barDuration / 2; // 2 note per battuta
+
+    // Definizione delle frequenze (alcune ottave selezionate per dare varietà)
+    const notes = {
+      "Bb2": 116.54,
+      "Ab2": 103.83,
+      "Bb3": 233.08,
+      "C4": 261.63,
+      "Db4": 277.18,
+      "Eb4": 311.13,
+      "F3": 174.61,
+      "F4": 349.23,
+      "Gb3": 185.00, // approssimazione
+      "Gb4": 369.99,
+      "Ab4": 415.30
+    };
+
+    // Aggiungiamo Db3 se non presente (approssimazione)
+    if (!notes["Db3"]) {
+      notes["Db3"] = notes["Bb2"] * Math.pow(2, 2/12);
+    }
+
+    // Melodia: 16 battute, 2 note per battuta (32 note in totale)
+    // La struttura segue quella precedentemente proposta
+    const melody = [
+      // Battuta 1
+      ["Bb3", noteDuration], ["Db4", noteDuration],
+      // Battuta 2
+      ["F4", noteDuration], ["Gb4", noteDuration],
+      // Battuta 3
+      ["Ab4", noteDuration], ["F4", noteDuration],
+      // Battuta 4
+      ["Eb4", noteDuration], ["C4", noteDuration],
+      // Battuta 5
+      ["Bb3", noteDuration], ["Gb3", noteDuration],
+      // Battuta 6
+      ["F3", noteDuration], ["Db3", noteDuration],
+      // Battuta 7
+      ["Bb2", noteDuration], ["Ab2", noteDuration],
+      // Battuta 8
+      ["Bb2", noteDuration], ["Bb3", noteDuration],
+      // Battuta 9
+      ["Bb3", noteDuration], ["Db4", noteDuration],
+      // Battuta 10
+      ["F4", noteDuration], ["Gb4", noteDuration],
+      // Battuta 11
+      ["Ab4", noteDuration], ["F4", noteDuration],
+      // Battuta 12
+      ["Eb4", noteDuration], ["C4", noteDuration],
+      // Battuta 13
+      ["Bb3", noteDuration], ["Gb3", noteDuration],
+      // Battuta 14
+      ["F3", noteDuration], ["Db3", noteDuration],
+      // Battuta 15
+      ["Bb2", noteDuration], ["Ab2", noteDuration],
+      // Battuta 16
+      ["Bb2", noteDuration], ["Bb3", noteDuration]
+    ];
+
+    // Funzione per creare un semplice inviluppo (attack breve, decay esponenziale)
+    function applyEnvelope(buffer, startSample, noteSamples) {
+      const attackSamples = Math.floor(0.05 * sampleRate);
+      for (let i = 0; i < noteSamples; i++) {
+        let envelope = 1;
+        if(i < attackSamples){
+          envelope = i / attackSamples;
+        } else {
+          envelope = Math.exp(-3 * (i / sampleRate));
+        }
+        buffer[startSample + i] *= envelope;
+      }
+    }
+
+    // Funzione per creare il buffer audio dell'intera melodia
+    async function createMelodyBuffer() {
+      // Calcola la durata totale della melodia
+      const totalDuration = melody.reduce((sum, note) => sum + note[1], 0);
+      const totalSamples = Math.ceil(totalDuration * sampleRate);
+
+      // Creiamo un OfflineAudioContext per la sintesi
+      const offlineContext = new OfflineAudioContext(1, totalSamples, sampleRate);
+      const buffer = offlineContext.createBuffer(1, totalSamples, sampleRate);
+      const data = buffer.getChannelData(0);
+
+      let currentSample = 0;
+      // Per ogni nota, sintetizziamo un'onda sinusoidale e la sommiamo nel buffer
+      for (const [noteName, duration] of melody) {
+        const freq = notes[noteName];
+        const noteSamples = Math.ceil(duration * sampleRate);
+        for (let i = 0; i < noteSamples; i++) {
+          data[currentSample + i] += Math.sin(2 * Math.PI * freq * (i / sampleRate));
+        }
+        // Applica inviluppo per dare l'effetto carillon
+        applyEnvelope(data, currentSample, noteSamples);
+        currentSample += noteSamples;
+      }
+      return buffer;
+    }
+
+    // Funzione per convertire un AudioBuffer in un file WAV
+    function bufferToWav(buffer) {
+      const numOfChan = buffer.numberOfChannels,
+            length = buffer.length * numOfChan * 2 + 44,
+            bufferArray = new ArrayBuffer(length),
+            view = new DataView(bufferArray),
+            channels = [],
+            sampleRate = buffer.sampleRate,
+            offset = 0,
+            pos = 0;
+
+      // scrivi header WAV
+      function setUint16(data) {
+          view.setUint16(pos, data, true);
+          pos += 2;
+      }
+      function setUint32(data) {
+          view.setUint32(pos, data, true);
+          pos += 4;
+      }
+
+      // RIFF identifier
+      for (let i = 0; i < 4; i++) {
+          view.setUint8(pos++, "RIFF".charCodeAt(i));
+      }
+      setUint32(length - 8);
+      // WAVE type
+      for (let i = 0; i < 4; i++) {
+          view.setUint8(pos++, "WAVE".charCodeAt(i));
+      }
+      // fmt chunk
+      for (let i = 0; i < 4; i++) {
+          view.setUint8(pos++, "fmt ".charCodeAt(i));
+      }
+      setUint32(16);
+      setUint16(1);
+      setUint16(numOfChan);
+      setUint32(sampleRate);
+      setUint32(sampleRate * numOfChan * 2);
+      setUint16(numOfChan * 2);
+      setUint16(16);
+      // data chunk
+      for (let i = 0; i < 4; i++) {
+          view.setUint8(pos++, "data".charCodeAt(i));
+      }
+      setUint32(length - pos - 4);
+
+      // scrive i dati PCM
+      for (let i = 0; i < buffer.numberOfChannels; i++) {
+          channels.push(buffer.getChannelData(i));
+      }
+      while (pos < length) {
+          for (let i = 0; i < numOfChan; i++) {
+              // interleaving
+              let sample = Math.max(-1, Math.min(1, channels[i][offset] || 0));
+              sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+              view.setInt16(pos, sample, true);
+              pos += 2;
+          }
+          offset++;
+      }
+      return new Blob([view], { type: "audio/wav" });
+    }
+
+    // Gestione del click del bottone
+    document.getElementById("generateBtn").addEventListener("click", async () => {
+      const buffer = await createMelodyBuffer();
+      // Renderizza l'audio (OfflineAudioContext)
+      const offlineCtx = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+      const source = offlineCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(offlineCtx.destination);
+      source.start();
+      const renderedBuffer = await offlineCtx.startRendering();
+
+      const wavBlob = bufferToWav(renderedBuffer);
+      const url = URL.createObjectURL(wavBlob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = "melody.wav";
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("File WAV generato e scaricato.");
+    });
+  </script>
+</body>
+</html>
