@@ -99,6 +99,70 @@
         height: 300px;
       }
     }
+
+    /* Stile per l'interruttore */
+    .mode-switch {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 12px;
+      border-radius: 20px;
+      color: white;
+    }
+
+    .switch-label {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
   </style>
 </head>
 <body>
@@ -132,6 +196,7 @@
         <a class="big-button" data-page="drammatron.html">🥁💊 Drammatron</a>
         <a class="big-button" data-page="fototron.html">📸 Fototron 📷</a>
         <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
+        <a class="big-button" data-page="strudetron.html">🎹 STRUDETRON 🎹</a>
       </div>
       
       <!-- Container per l'iframe -->
@@ -145,43 +210,59 @@
     </div>
   </div>
   
+  <!-- Interruttore modalità -->
+  <div class="mode-switch">
+    <span class="switch-label">Embed</span>
+    <label class="switch">
+      <input type="checkbox" id="mode-toggle" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
+
   <script src="script.js"></script>
   <script>
-    // Gestione dei bottoni per aprire le pagine in iframe
-    document.querySelectorAll('.big-button').forEach(button => {
-      // Rimuoviamo l'attributo href per evitare la navigazione predefinita
-      const pagePath = button.getAttribute('data-page');
-      button.removeAttribute('href');
-      
-      // Aggiungiamo l'evento click
-      button.addEventListener('click', function() {
-        const iframe = document.getElementById('tool-frame');
-        const container = document.getElementById('iframe-container');
-        const title = document.getElementById('iframe-title');
-        
-        // Imposta il titolo basato sul testo del bottone
-        title.textContent = this.textContent.trim();
-        
-        // Carica la pagina nell'iframe
-        iframe.src = pagePath;
-        
-        // Mostra il container dell'iframe
-        container.classList.add('active');
-      });
-    });
+    // Interruttore modalità
+    const modeToggle = document.getElementById('mode-toggle');
     
-    // Pulsante per chiudere l'iframe
-    document.getElementById('close-iframe').addEventListener('click', function() {
-      const container = document.getElementById('iframe-container');
-      const iframe = document.getElementById('tool-frame');
+    // Carica lo stato salvato o usa embed come default
+    const savedMode = localStorage.getItem('embedMode');
+    if (savedMode !== null) {
+      modeToggle.checked = savedMode === 'true';
+    }
+
+    // Aggiorna i bottoni in base alla modalità
+    function updateButtons() {
+      const buttons = document.querySelectorAll('.big-button');
+      const isEmbedMode = modeToggle.checked;
       
-      // Nascondi il container
-      container.classList.remove('active');
-      
-      // Pulisci l'iframe (opzionale)
-      setTimeout(() => {
-        iframe.src = 'about:blank';
-      }, 300);
+      buttons.forEach(button => {
+        const pagePath = button.getAttribute('data-page');
+        
+        if (isEmbedMode) {
+          button.removeAttribute('href');
+          button.onclick = function() {
+            const iframe = document.getElementById('tool-frame');
+            const container = document.getElementById('iframe-container');
+            const title = document.getElementById('iframe-title');
+            
+            title.textContent = this.textContent.trim();
+            iframe.src = pagePath;
+            container.classList.add('active');
+          };
+        } else {
+          button.setAttribute('href', pagePath);
+          button.onclick = null;
+        }
+      });
+    }
+
+    // Inizializza i bottoni
+    updateButtons();
+    
+    // Cambia modalità quando l'interruttore viene modificato
+    modeToggle.addEventListener('change', function() {
+      localStorage.setItem('embedMode', this.checked);
+      updateButtons();
     });
 
     window.dataLayer = window.dataLayer || [];
