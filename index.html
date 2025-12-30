@@ -197,7 +197,7 @@
         <a class="big-button" data-page="fototron.html">📸 Fototron 📷</a>
          <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
          <a class="big-button" data-page="strudetron.html">🎹 STRUDETRON 🎹</a>
-         <a class="big-button" href="https://francocerone.github.io/fratemix/" target="_blank">FRATEMIX</a>
+         <a class="big-button" href="https://francocerone.github.io/fratemix/" target="_blank">🎛️🎧 FRATEMIX 🎧🎛️</a>
        </div>
       
       <!-- Container per l'iframe -->
@@ -238,6 +238,9 @@
       
       buttons.forEach(button => {
         const pagePath = button.getAttribute('data-page');
+        
+        // Salta i bottoni senza data-page (link esterni)
+        if (!pagePath) return;
         
         if (isEmbedMode) {
           button.removeAttribute('href');
