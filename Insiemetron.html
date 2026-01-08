@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Labyrinth - Time Attack</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --accent-color: #00ff88;
+            --warn-color: #ff4444;
+            --ui-bg: rgba(0, 0, 0, 0.85);
+            --btn-bg: #333;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color); color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            height: 100vh; 
+            overflow: hidden; touch-action: none;
+        }
+
+        /* --- HEADER UI (Aggiornato con Timer) --- */
+        #ui-container {
+            width: 100%; max-width: 600px;
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; /* 3 colonne uguali */
+            padding: 10px; box-sizing: border-box;
+            background: var(--ui-bg); border-bottom: 2px solid var(--accent-color);
+            flex-shrink: 0;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .highlight { color: var(--accent-color); font-weight: bold; }
+        .timer-warn { color: var(--warn-color); animation: pulse 0.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* --- AREA GIOCO --- */
+        #game-wrapper {
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            width: 100%; position: relative;
+        }
+
+        canvas {
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+            border-radius: 4px;
+        }
+
+        /* --- CONTROLLI --- */
+        #controls {
+            display: grid; grid-template-columns: 60px 60px 60px; grid-template-rows: 60px 60px;
+            gap: 10px; margin-bottom: 20px; flex-shrink: 0;
+        }
+        .ctrl-btn {
+            background-color: var(--btn-bg); border: 2px solid #555; border-radius: 10px;
+            color: white; font-size: 24px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .ctrl-btn:active { background-color: var(--accent-color); color: #000; }
+        #btn-up { grid-column: 2; grid-row: 1; }
+        #btn-left { grid-column: 1; grid-row: 2; }
+        #btn-down { grid-column: 2; grid-row: 2; }
+        #btn-right { grid-column: 3; grid-row: 2; }
+
+        /* --- OVERLAY --- */
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; padding: 20px; box-sizing: border-box; text-align: center;
+        }
+        h1 { color: var(--accent-color); margin-bottom: 10px; font-size: 2rem; text-transform: uppercase; }
+        #start-btn {
+            padding: 15px 50px; font-size: 1.2rem; background-color: var(--accent-color);
+            color: #000; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px;
+        }
+        #start-btn:disabled { background-color: #555; opacity: 0.5; }
+        
+        #debug-log {
+            font-family: monospace; color: #aaa; font-size: 0.75rem; background: #222;
+            padding: 5px; border-radius: 5px; width: 100%; max-width: 300px; max-height: 80px;
+            overflow-y: auto; margin-top: 15px; border: 1px solid #444; text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UI: Livello | Tempo | Canzone -->
+    <div id="ui-container">
+        <div>Lv: <span id="level-display" class="highlight">-</span>/<span id="total-levels">-</span></div>
+        <div>⏱️ <span id="time-display" class="highlight">30</span>s</div>
+        <div style="overflow:hidden; text-overflow: ellipsis; white-space: nowrap;">🎵 <span id="song-display">...</span></div>
+    </div>
+
+    <div id="game-wrapper">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="controls">
+        <div class="ctrl-btn" id="btn-up">▲</div>
+        <div class="ctrl-btn" id="btn-left">◀</div>
+        <div class="ctrl-btn" id="btn-down">▼</div>
+        <div class="ctrl-btn" id="btn-right">▶</div>
+    </div>
+
+    <div id="overlay">
+        <h1 id="overlay-title">Labyrinth</h1>
+        <p id="main-message">Connessione...</p>
+        <div id="debug-log">System init...</div>
+        <button id="start-btn" disabled>ATTENDI</button>
+    </div>
+
+    <script>
+        // --- CONFIGURAZIONE ---
+        const API_KEY = 'AIzaSyCsKsvTqnlnDD94CYef0diL_M0jZ4HqjTk';
+        const FOLDER_ID = '1JdLjxDa8xNTDYJgUCGLurORSbW0pXUAn';
+        const TIME_LIMIT_SECONDS = 30; // 30 Secondi per livello
+
+        let playlist = [];
+        let currentAudio = new Audio();
+        let currentLevel = 1;
+        
+        // Timer Variables
+        let timerInterval = null;
+        let timeLeft = TIME_LIMIT_SECONDS;
+        
+        const dom = {
+            overlay: document.getElementById('overlay'),
+            title: document.getElementById('overlay-title'),
+            btn: document.getElementById('start-btn'),
+            msg: document.getElementById('main-message'),
+            debug: document.getElementById('debug-log'),
+            level: document.getElementById('level-display'),
+            total: document.getElementById('total-levels'),
+            song: document.getElementById('song-display'),
+            time: document.getElementById('time-display'),
+            canvas: document.getElementById('gameCanvas'),
+            wrapper: document.getElementById('game-wrapper')
+        };
+
+        const ctx = dom.canvas.getContext('2d');
+        let cols, rows, cellSize, grid = [], player, exit;
+
+        function log(msg) {
+            const line = document.createElement('div');
+            line.textContent = `> ${msg}`;
+            dom.debug.appendChild(line);
+            dom.debug.scrollTop = dom.debug.scrollHeight;
+        }
+
+        // --- 1. INIT API ---
+        async function initGame() {
+            try {
+                const q = `'${FOLDER_ID}' in parents and trashed = false and mimeType contains 'audio/'`;
+                const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)&key=${API_KEY}`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`API: ${response.status}`);
+                const data = await response.json();
+                
+                if (!data.files || data.files.length === 0) throw new Error("No Audio Files.");
+
+                playlist = data.files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+                log(`Playlist OK: ${playlist.length} tracks`);
+                dom.total.textContent = playlist.length;
+                dom.btn.textContent = "GIOCA";
+                dom.btn.disabled = false;
+                dom.msg.textContent = "Obiettivo: Completa ogni livello in 30 secondi.";
+
+            } catch (err) {
+                log(err.message);
+                dom.msg.textContent = "Errore Connessione.";
+            }
+        }
+
+        // --- 2. AUDIO & TIMER MANAGEMENT ---
+        function playTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+            const track = playlist[index];
+            dom.song.textContent = track.name.replace(/\.[^/.]+$/, "").substring(0, 15); // Short name
+            
+            const audioUrl = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${API_KEY}`;
+            currentAudio.src = audioUrl;
+            currentAudio.loop = true;
+            currentAudio.volume = 0.5;
+            currentAudio.play().catch(() => {});
+        }
+
+        function startTimer() {
+            // Reset timer
+            stopTimer();
+            timeLeft = TIME_LIMIT_SECONDS;
+            updateTimeUI();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimeUI();
+
+                if (timeLeft <= 0) {
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function updateTimeUI() {
+            dom.time.textContent = timeLeft;
+            if (timeLeft <= 10) {
+                dom.time.classList.add('timer-warn'); // Rosso lampeggiante
+            } else {
+                dom.time.classList.remove('timer-warn');
+            }
+        }
+
+        function handleTimeOut() {
+            stopTimer();
+            currentAudio.pause();
+            
+            // LOGICA DI SCONFITTA
+            currentLevel = 1; // Ripartiamo da 1
+            
+            dom.title.textContent = "TEMPO SCADUTO!";
+            dom.title.style.color = "#ff4444";
+            dom.msg.innerHTML = "Non sei stato abbastanza veloce.<br>Devi ricominciare dal <strong>Livello 1</strong>.";
+            dom.btn.textContent = "RIPROVA";
+            dom.overlay.style.display = 'flex';
+        }
+
+        // --- 3. LABIRINTO ---
+        class Cell {
+            constructor(c, r) { this.c = c; this.r = r; this.walls = [true, true, true, true]; this.visited = false; }
+            show() {
+                const x = this.c * cellSize; const y = this.r * cellSize;
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
+                if (this.walls[0]) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + cellSize, y); ctx.stroke(); }
+                if (this.walls[1]) { ctx.beginPath(); ctx.moveTo(x + cellSize, y); ctx.lineTo(x + cellSize, y + cellSize); ctx.stroke(); }
+                if (this.walls[2]) { ctx.beginPath(); ctx.moveTo(x + cellSize, y + cellSize); ctx.lineTo(x, y + cellSize); ctx.stroke(); }
+                if (this.walls[3]) { ctx.beginPath(); ctx.moveTo(x, y + cellSize); ctx.lineTo(x, y); ctx.stroke(); }
+            }
+        }
+
+        function setupMaze(level) {
+            const maxWidth = dom.wrapper.clientWidth - 10;
+            const maxHeight = dom.wrapper.clientHeight - 10;
+            const minDimension = Math.min(maxWidth, maxHeight);
+            
+            // Difficoltà leggermente ridotta dato che c'è il timer
+            const mazeSize = Math.min(6 + Math.floor(level / 2), 18); 
+            cols = mazeSize; rows = mazeSize;
+            cellSize = Math.floor(minDimension / cols);
+            
+            dom.canvas.width = cols * cellSize; dom.canvas.height = rows * cellSize;
+
+            grid = [];
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) grid.push(new Cell(c, r));
+
+            let current = grid[0]; current.visited = true;
+            let stack = []; let completed = false;
+
+            while(!completed) {
+                let neighbors = [];
+                const idx = (c, r) => (c<0||r<0||c>=cols||r>=rows) ? -1 : c + r * cols;
+                const dirs = [{r:-1,c:0,w:0,o:2}, {r:0,c:1,w:1,o:3}, {r:1,c:0,w:2,o:0}, {r:0,c:-1,w:3,o:1}];
+                
+                for(let d of dirs) {
+                    let n = grid[idx(current.c + d.c, current.r + d.r)];
+                    if(n && !n.visited) neighbors.push({cell:n, dir:d});
+                }
+                if(neighbors.length > 0) {
+                    let chosen = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    chosen.cell.visited = true;
+                    stack.push(current);
+                    current.walls[chosen.dir.w] = false; chosen.cell.walls[chosen.dir.o] = false;
+                    current = chosen.cell;
+                } else if(stack.length > 0) {
+                    current = stack.pop();
+                } else { completed = true; }
+            }
+            player = { c: 0, r: 0 }; exit = { c: cols-1, r: rows-1 };
+        }
+
+        function draw() {
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, dom.canvas.width, dom.canvas.height);
+            for(let cell of grid) cell.show();
+            ctx.fillStyle = '#00ff88'; ctx.fillRect(exit.c*cellSize+2, exit.r*cellSize+2, cellSize-4, cellSize-4);
+            ctx.fillStyle = '#ff3366'; ctx.beginPath(); 
+            ctx.arc(player.c*cellSize+cellSize/2, player.r*cellSize+cellSize/2, cellSize/3, 0, Math.PI*2); 
+            ctx.fill();
+        }
+
+        function move(dc, dr) {
+            const idx = player.c + player.r * cols; const cell = grid[idx];
+            if(dr === -1 && !cell.walls[0]) player.r--;
+            else if(dc === 1 && !cell.walls[1]) player.c++;
+            else if(dr === 1 && !cell.walls[2]) player.r++;
+            else if(dc === -1 && !cell.walls[3]) player.c--;
+            
+            draw();
+            
+            if(player.c === exit.c && player.r === exit.r) {
+                // LIVELLO COMPLETATO
+                stopTimer(); // Ferma il timer attuale
+                currentLevel++;
+                
+                if(currentLevel > playlist.length) {
+                    dom.title.textContent = "VITTORIA!";
+                    dom.title.style.color = "#00ff88";
+                    dom.msg.textContent = "Hai completato la playlist!";
+                    dom.btn.textContent = "RICOMINCIA";
+                    dom.overlay.style.display = 'flex';
+                    currentLevel = 1;
+                    currentAudio.pause();
+                } else {
+                    startGame(currentLevel);
+                }
+            }
+        }
+
+        function startGame(level) {
+            dom.level.textContent = level;
+            setupMaze(level);
+            draw();
+            playTrack(level - 1);
+            startTimer(); // AVVIA IL TIMER
+        }
+
+        // --- INPUT HANDLING ---
+        window.addEventListener('keydown', e => {
+            if(dom.overlay.style.display !== 'none') return;
+            if(e.key.includes('Up') || e.key === 'w') move(0,-1);
+            if(e.key.includes('Right') || e.key === 'd') move(1,0);
+            if(e.key.includes('Down') || e.key === 's') move(0,1);
+            if(e.key.includes('Left') || e.key === 'a') move(-1,0);
+        });
+
+        function addTouch(id, dx, dy) {
+            const el = document.getElementById(id);
+            const action = (e) => {
+                if(e.cancelable) e.preventDefault();
+                if(dom.overlay.style.display === 'none') move(dx, dy);
+            };
+            el.addEventListener('touchstart', action, {passive: false});
+            el.addEventListener('mousedown', action); // Per test desktop col mouse
+        }
+        addTouch('btn-up', 0, -1); addTouch('btn-down', 0, 1);
+        addTouch('btn-left', -1, 0); addTouch('btn-right', 1, 0);
+
+        window.addEventListener('resize', () => {
+            if(dom.overlay.style.display === 'none') { setupMaze(currentLevel); draw(); }
+        });
+
+        dom.btn.addEventListener('click', () => {
+            dom.overlay.style.display = 'none';
+            // Reset stile titolo (potrebbe essere rosso da game over)
+            dom.title.textContent = "LABYRINTH";
+            dom.title.style.color = "var(--accent-color)";
+            
+            if(currentAudio.context && currentAudio.context.state === 'suspended') currentAudio.context.resume();
+            startGame(currentLevel);
+        });
+
+        initGame();
+
+    </script>
+</body>
+</html>
