@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate Arcade Mix</title>
+    <style>
+        :root {
+            --bg: #111;
+            --ui-bg: #222;
+            --accent: #0f0;
+            --text: #fff;
+            --btn-color: #333;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Verdana', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; touch-action: none; user-select: none;
+        }
+
+        /* HEADER */
+        #top-bar {
+            width: 100%; max-width: 600px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--ui-bg); padding: 10px; box-sizing: border-box;
+            border-bottom: 2px solid var(--accent);
+            z-index: 10;
+        }
+        .stat { display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
+        .val { font-size: 1.2rem; font-weight: bold; color: var(--accent); }
+        
+        #pause-btn {
+            background: #d32f2f; color: white; border: none; padding: 5px 15px;
+            font-weight: bold; border-radius: 4px; cursor: pointer;
+        }
+
+        /* GAME AREA */
+        #game-wrap {
+            flex-grow: 1; width: 100%; max-width: 600px;
+            display: flex; align-items: center; justify-content: center;
+            background: #000; position: relative;
+        }
+        canvas { box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+
+        /* SONG INFO */
+        #song-info {
+            width: 100%; text-align: center; font-size: 0.75rem; color: #888;
+            padding: 4px; background: #1a1a1a;
+        }
+
+        /* CONTROLS */
+        #controls {
+            display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
+            width: 100%; max-width: 400px; height: 160px; gap: 8px; padding: 10px;
+            flex-shrink: 0;
+        }
+        .btn {
+            background: var(--btn-color); border: 1px solid #555; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: #aaa; cursor: pointer;
+        }
+        .btn:active { background: var(--accent); color: #000; }
+        #b-up { grid-column: 2; grid-row: 1; }
+        #b-left { grid-column: 1; grid-row: 2; }
+        #b-down { grid-column: 2; grid-row: 2; }
+        #b-right { grid-column: 3; grid-row: 2; }
+
+        /* OVERLAY */
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 50;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        h1 { color: var(--accent); margin-bottom: 10px; text-transform: uppercase; }
+        .big-btn {
+            padding: 15px 40px; background: var(--accent); color: #000; border: none;
+            font-size: 1.2rem; font-weight: bold; border-radius: 30px; margin-top: 20px; cursor: pointer;
+        }
+        .big-btn:disabled { background: #555; cursor: not-allowed; }
+        
+        #leaderboard {
+            margin-top: 20px; width: 80%; background: #222; padding: 10px; border-radius: 5px;
+            font-family: monospace; text-align: left; max-height: 150px; overflow-y: auto;
+        }
+        .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding: 4px 0; }
+
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <div class="stat"><span>Livello</span><span class="val" id="ui-lvl">1</span></div>
+        <div class="stat"><span>Punti</span><span class="val" id="ui-score">0</span></div>
+        <button id="pause-btn">PAUSA</button>
+    </div>
+
+    <div id="song-info">🎵 Connessione...</div>
+
+    <div id="game-wrap">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="controls">
+        <div class="btn" id="b-up">▲</div>
+        <div class="btn" id="b-left">◀</div>
+        <div class="btn" id="b-down">▼</div>
+        <div class="btn" id="b-right">▶</div>
+    </div>
+
+    <div id="overlay">
+        <h1 id="ov-title">ARCADE MIX</h1>
+        <p id="ov-msg">Caricamento sistema...</p>
+        <div id="leaderboard">
+            <div style="text-align:center; color:#888;">Classifica</div>
+            <div id="lb-list">...</div>
+        </div>
+        <button id="start-btn" class="big-btn" disabled>ATTENDI</button>
+    </div>
+
+    <script>
+        // --- CONFIGURAZIONE ---
+        const API_KEY = 'AIzaSyCsKsvTqnlnDD94CYef0diL_M0jZ4HqjTk';
+        const FOLDER_ID = '1JdLjxDa8xNTDYJgUCGLurORSbW0pXUAn';
+
+        // --- GESTORE SALVATAGGI (LocalStorage) ---
+        const Storage = {
+            save: (score, lvl) => {
+                let data = JSON.parse(localStorage.getItem('arcade_mix_save') || '[]');
+                data.push({ s: Math.floor(score), l: lvl, d: new Date().toLocaleDateString() });
+                data.sort((a, b) => b.s - a.s); // Ordina per punti decrescenti
+                data = data.slice(0, 5); // Tieni solo i top 5
+                localStorage.setItem('arcade_mix_save', JSON.stringify(data));
+                Storage.render();
+            },
+            render: () => {
+                const data = JSON.parse(localStorage.getItem('arcade_mix_save') || '[]');
+                const el = document.getElementById('lb-list');
+                if(!data.length) { el.innerHTML = "<small>Nessun record.</small>"; return; }
+                el.innerHTML = data.map((r, i) => 
+                    `<div class="lb-row"><span>#${i+1} Lv.${r.l}</span><span>${r.s} pts</span></div>`
+                ).join('');
+            }
+        };
+
+        // --- SISTEMA PRINCIPALE ---
+        const Sys = {
+            state: 'init', // init, menu, play, pause, over
+            level: 1,
+            score: 0,
+            playlist: [],
+            audio: new Audio(),
+            canvas: document.getElementById('gameCanvas'),
+            ctx: document.getElementById('gameCanvas').getContext('2d'),
+            width: 0, height: 0,
+            game: null, // Minigioco attivo
+            loopId: null
+        };
+
+        const Input = { x: 0, y: 0 };
+        const UI = {
+            lvl: document.getElementById('ui-lvl'),
+            score: document.getElementById('ui-score'),
+            song: document.getElementById('song-info'),
+            overlay: document.getElementById('overlay'),
+            title: document.getElementById('ov-title'),
+            msg: document.getElementById('ov-msg'),
+            btn: document.getElementById('start-btn')
+        };
+
+        // --- INIZIALIZZAZIONE ---
+        async function init() {
+            Storage.render();
+            resize();
+            try {
+                // Fetch Audio
+                const q = `'${FOLDER_ID}' in parents and trashed = false and mimeType contains 'audio/'`;
+                const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&key=${API_KEY}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Err API");
+                const data = await res.json();
+                if (!data.files || !data.files.length) throw new Error("No Songs");
+                
+                // Shuffle
+                Sys.playlist = data.files.sort(() => Math.random() - 0.5);
+                
+                UI.btn.disabled = false;
+                UI.btn.textContent = "GIOCA";
+                UI.msg.textContent = "Pronto! 40 Livelli - 5 Giochi";
+            } catch (e) {
+                UI.msg.textContent = "Errore: " + e.message;
+            }
+        }
+
+        function playMusic(lvl) {
+            const track = Sys.playlist[(lvl - 1) % Sys.playlist.length];
+            UI.song.textContent = `🎵 ${track.name.substring(0, 30)}...`;
+            Sys.audio.src = `https://www.googleapis.com/drive/v3/files/${track.id}?alt=media&key=${API_KEY}`;
+            Sys.audio.loop = true;
+            Sys.audio.volume = 0.5;
+            Sys.audio.play().catch(() => {});
+        }
+
+        // --- MOTORE MINIGIOCHI ---
+        class GameBase {
+            constructor(lvl) {
+                this.lvl = lvl;
+                this.won = false; this.lost = false;
+                this.target = 0; this.progress = 0;
+                this.diff = 1 + (lvl * 0.1); // Moltiplicatore difficoltà
+            }
+            // Metodi da sovrascrivere
+            update() {}
+            draw(ctx) {}
+            // Helper testo
+            drawInfo(ctx, txt) {
+                ctx.fillStyle = '#fff'; ctx.font = "14px monospace";
+                ctx.fillText(txt, 10, 20);
+            }
+        }
+
+        /* 1. NEON SNAKE */
+        class GameSnake extends GameBase {
+            constructor(lvl) {
+                super(lvl);
+                this.name = "NEON SNAKE";
+                this.gs = 20; 
+                this.cols = Math.floor(Sys.width/this.gs); this.rows = Math.floor(Sys.height/this.gs);
+                this.snake = [{x:5,y:5}];
+                this.dir = {x:1,y:0}; this.nextDir = {x:1,y:0};
+                this.food = this.randFood();
+                this.target = 4 + Math.floor(lvl/2);
+                this.speed = Math.max(3, 12 - Math.floor(lvl/4)); // Frame delay
+                this.tick = 0;
+            }
+            randFood() { return {x:Math.floor(Math.random()*(this.cols-2))+1, y:Math.floor(Math.random()*(this.rows-2))+1}; }
+            update() {
+                if(Input.x && !this.dir.x) this.nextDir = {x:Input.x, y:0};
+                if(Input.y && !this.dir.y) this.nextDir = {x:0, y:Input.y};
+                this.tick++;
+                if(this.tick % this.speed !== 0) return;
+
+                this.dir = this.nextDir;
+                let h = {x:this.snake[0].x+this.dir.x, y:this.snake[0].y+this.dir.y};
+                
+                if(h.x<0||h.x>=this.cols||h.y<0||h.y>=this.rows) { this.lost=true; return; }
+                for(let s of this.snake) if(h.x===s.x && h.y===s.y) { this.lost=true; return; }
+
+                this.snake.unshift(h);
+                if(h.x===this.food.x && h.y===this.food.y) {
+                    this.progress++; Sys.score+=10;
+                    if(this.progress>=this.target) this.won=true;
+                    this.food=this.randFood();
+                } else this.snake.pop();
+            }
+            draw(ctx) {
+                ctx.fillStyle='#0f0';
+                this.snake.forEach(s => ctx.fillRect(s.x*this.gs, s.y*this.gs, this.gs-1, this.gs-1));
+                ctx.fillStyle='#f00';
+                ctx.beginPath(); ctx.arc(this.food.x*this.gs+this.gs/2, this.food.y*this.gs+this.gs/2, this.gs/3, 0, 7); ctx.fill();
+                this.drawInfo(ctx, `Snake: ${this.progress}/${this.target}`);
+            }
+        }
+
+        /* 2. BLOCK RAIN (Survival) */
+        class GameRain extends GameBase {
+            constructor(lvl) {
+                super(lvl);
+                this.name = "BLOCK RAIN";
+                this.player = {x:Sys.width/2, w:30, h:30};
+                this.blocks = [];
+                this.target = 400 + (lvl*50); // Frame count to survive
+                this.rate = Math.max(10, 50 - lvl);
+                this.timer = 0;
+            }
+            update() {
+                this.player.x += Input.x * 5;
+                if(this.player.x<0) this.player.x=0;
+                if(this.player.x>Sys.width-30) this.player.x=Sys.width-30;
+
+                this.progress++; Sys.score++;
+                if(this.progress >= this.target) this.won=true;
+
+                this.timer++;
+                if(this.timer % this.rate === 0) {
+                    this.blocks.push({x:Math.random()*(Sys.width-30), y:-30, s: 2 + (this.diff*0.5)});
+                }
+                for(let i=this.blocks.length-1; i>=0; i--) {
+                    let b = this.blocks[i]; b.y += b.s;
+                    // Collision
+                    if(this.player.x < b.x+30 && this.player.x+30 > b.x && Sys.height-40 < b.y+20 && Sys.height-10 > b.y) this.lost=true;
+                    if(b.y > Sys.height) this.blocks.splice(i,1);
+                }
+            }
+            draw(ctx) {
+                ctx.fillStyle='#0ff'; ctx.fillRect(this.player.x, Sys.height-40, 30, 30);
+                ctx.fillStyle='#f0f'; this.blocks.forEach(b => ctx.fillRect(b.x, b.y, 30, 20));
+                this.drawInfo(ctx, `Resisti: ${Math.floor((this.target-this.progress)/60)}s`);
+            }
+        }
+
+        /* 3. HUNTER (Pacman style) */
+        class GameHunter extends GameBase {
+            constructor(lvl) {
+                super(lvl);
+                this.name = "HUNTER";
+                this.p = {x:50, y:50};
+                this.e = {x:Sys.width-50, y:Sys.height-50, s: 1 + (lvl*0.05)};
+                this.coins = [];
+                this.target = 5 + Math.floor(lvl/2);
+                for(let i=0; i<this.target+2; i++) this.spawnCoin();
+            }
+            spawnCoin() { this.coins.push({x:Math.random()*(Sys.width-40)+20, y:Math.random()*(Sys.height-40)+20, a:true}); }
+            update() {
+                this.p.x += Input.x*4; this.p.y += Input.y*4;
+                // Bounds
+                this.p.x = Math.max(10, Math.min(Sys.width-10, this.p.x));
+                this.p.y = Math.max(10, Math.min(Sys.height-10, this.p.y));
+
+                // Enemy chase
+                let dx = this.p.x-this.e.x, dy = this.p.y-this.e.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 20) this.lost=true;
+                this.e.x += (dx/dist)*this.e.s; this.e.y += (dy/dist)*this.e.s;
+
+                // Coin
+                this.coins.forEach(c => {
+                    if(!c.a) return;
+                    let cdx = this.p.x-c.x, cdy = this.p.y-c.y;
+                    if(Math.sqrt(cdx*cdx+cdy*cdy) < 20) {
+                        c.a=false; this.progress++; Sys.score+=20;
+                        if(this.progress>=this.target) this.won=true;
+                    }
+                });
+            }
+            draw(ctx) {
+                ctx.fillStyle='gold'; this.coins.forEach(c => { if(c.a) { ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, 7); ctx.fill(); }});
+                ctx.fillStyle='#0f0'; ctx.beginPath(); ctx.arc(this.p.x, this.p.y, 10, 0, 7); ctx.fill(); // Player
+                ctx.fillStyle='#f00'; ctx.beginPath(); ctx.arc(this.e.x, this.e.y, 10, 0, 7); ctx.fill(); // Enemy
+                this.drawInfo(ctx, `Monete: ${this.progress}/${this.target}`);
+            }
+        }
+
+        /* 4. HYPER PONG (Keep ball up) */
+        class GamePong extends GameBase {
+            constructor(lvl) {
+                super(lvl);
+                this.name = "HYPER PONG";
+                this.pad = {x:Sys.width/2, w:80};
+                this.ball = {x:Sys.width/2, y:50, dx:3, dy:3};
+                this.target = 8 + lvl; // Hits needed
+            }
+            update() {
+                this.pad.x += Input.x * 6;
+                if(this.pad.x < 0) this.pad.x = 0;
+                if(this.pad.x > Sys.width - this.pad.w) this.pad.x = Sys.width - this.pad.w;
+
+                this.ball.x += this.ball.dx;
+                this.ball.y += this.ball.dy;
+
+                // Walls
+                if(this.ball.x < 0 || this.ball.x > Sys.width) this.ball.dx *= -1;
+                if(this.ball.y < 0) this.ball.dy *= -1;
+
+                // Paddle Hit
+                if(this.ball.y > Sys.height - 30 && this.ball.x > this.pad.x && this.ball.x < this.pad.x + this.pad.w) {
+                    this.ball.dy *= -1.1; // Speed up
+                    this.ball.y = Sys.height - 35;
+                    this.progress++; Sys.score += 15;
+                    if(this.progress >= this.target) this.won = true;
+                }
+
+                // Die
+                if(this.ball.y > Sys.height) this.lost = true;
+            }
+            draw(ctx) {
+                ctx.fillStyle = '#ff0'; ctx.fillRect(this.pad.x, Sys.height-20, this.pad.w, 10);
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(this.ball.x, this.ball.y, 8, 0, 7); ctx.fill();
+                this.drawInfo(ctx, `Colpi: ${this.progress}/${this.target}`);
+            }
+        }
+
+        /* 5. LABYRINTH (Classic) */
+        class GameMaze extends GameBase {
+            constructor(lvl) {
+                super(lvl);
+                this.name = "LABYRINTH";
+                this.cols = Math.min(6 + Math.floor(lvl/3), 15);
+                this.rows = this.cols;
+                this.cs = Math.floor(Math.min(Sys.width, Sys.height)/this.cols);
+                this.grid=[]; this.p={c:0,r:0}; this.e={c:this.cols-1,r:this.rows-1};
+                // Gen
+                for(let i=0;i<this.cols*this.rows;i++) this.grid.push({w:[1,1,1,1],v:false});
+                let st=[], c=this.grid[0]; c.v=true;
+                let safety=0;
+                while(safety<3000) {
+                    let n=[], idx=this.grid.indexOf(c), cx=idx%this.cols, cy=Math.floor(idx/this.cols);
+                    [[0,-1,0,2],[1,0,1,3],[0,1,2,0],[-1,0,3,1]].forEach(d=>{
+                        let nx=cx+d[0], ny=cy+d[1];
+                        if(nx>=0&&ny>=0&&nx<this.cols&&ny<this.rows) {
+                            let cel=this.grid[ny*this.cols+nx];
+                            if(!cel.v) n.push({c:cel,w:d[2],o:d[3]});
+                        }
+                    });
+                    if(n.length){
+                        let nx=n[Math.floor(Math.random()*n.length)];
+                        nx.c.v=true; st.push(c); c.w[nx.w]=0; nx.c.w[nx.o]=0; c=nx.c;
+                    } else if(st.length) c=st.pop(); else break;
+                    safety++;
+                }
+            }
+            update() {
+                if(Input.x||Input.y){
+                    let cel=this.grid[this.p.r*this.cols+this.p.c];
+                    let mv=false;
+                    if(Input.y<0 && !cel.w[0]) {this.p.r--; mv=true;}
+                    else if(Input.x>0 && !cel.w[1]) {this.p.c++; mv=true;}
+                    else if(Input.y>0 && !cel.w[2]) {this.p.r++; mv=true;}
+                    else if(Input.x<0 && !cel.w[3]) {this.p.c--; mv=true;}
+                    if(mv){
+                        Input.x=0; Input.y=0; // Step move
+                        if(this.p.c===this.e.c && this.p.r===this.e.r) this.won=true;
+                    }
+                }
+            }
+            draw(ctx) {
+                let ox=(Sys.width-(this.cols*this.cs))/2, oy=(Sys.height-(this.rows*this.cs))/2;
+                ctx.translate(ox,oy);
+                ctx.strokeStyle='#444'; ctx.lineWidth=2;
+                this.grid.forEach((c,i)=>{
+                    let x=(i%this.cols)*this.cs, y=Math.floor(i/this.cols)*this.cs;
+                    if(c.w[0]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+this.cs,y);ctx.stroke();}
+                    if(c.w[1]){ctx.beginPath();ctx.moveTo(x+this.cs,y);ctx.lineTo(x+this.cs,y+this.cs);ctx.stroke();}
+                    if(c.w[2]){ctx.beginPath();ctx.moveTo(x,y+this.cs);ctx.lineTo(x+this.cs,y+this.cs);ctx.stroke();}
+                    if(c.w[3]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+this.cs);ctx.stroke();}
+                });
+                ctx.fillStyle='#0f0'; ctx.fillRect(this.e.c*this.cs+4, this.e.r*this.cs+4, this.cs-8, this.cs-8);
+                ctx.fillStyle='#0ff'; ctx.beginPath(); ctx.arc(this.p.c*this.cs+this.cs/2, this.p.r*this.cs+this.cs/2, this.cs/3, 0, 7); ctx.fill();
+                ctx.translate(-ox,-oy);
+                this.drawInfo(ctx, "Raggiungi il quadrato Verde");
+            }
+        }
+
+        // --- GAME LOOP ---
+        function startGame(lvl) {
+            Sys.level = lvl;
+            Sys.state = 'play';
+            UI.lvl.textContent = lvl;
+            UI.score.textContent = Sys.score;
+
+            // Seleziona gioco Random o in Sequenza
+            const games = [GameSnake, GameRain, GameHunter, GamePong, GameMaze];
+            const Choice = games[Math.floor(Math.random() * games.length)];
+            Sys.game = new Choice(lvl);
+
+            // Toast
+            UI.title.textContent = `LIVELLO ${lvl}`;
+            UI.msg.textContent = Sys.game.name;
+            UI.overlay.style.display = 'flex';
+            setTimeout(() => { if(Sys.state==='play') UI.overlay.style.display='none'; }, 1500);
+
+            playMusic(lvl);
+            loop();
+        }
+
+        function loop() {
+            if(Sys.state !== 'play') return;
+            
+            // Clear
+            Sys.ctx.fillStyle = '#000';
+            Sys.ctx.fillRect(0, 0, Sys.width, Sys.height);
+
+            // Logic
+            if(Sys.game) {
+                Sys.game.update();
+                Sys.game.draw(Sys.ctx);
+
+                if(Sys.game.won) {
+                    Sys.score += 100;
+                    Sys.level++;
+                    if(Sys.level > 40) winGame();
+                    else startGame(Sys.level);
+                    return;
+                }
+                if(Sys.game.lost) {
+                    gameOver();
+                    return;
+                }
+            }
+            Sys.loopId = requestAnimationFrame(loop);
+        }
+
+        function gameOver() {
+            Sys.state = 'over';
+            Sys.audio.pause();
+            Storage.save(Sys.score, Sys.level);
+            UI.title.textContent = "GAME OVER";
+            UI.title.style.color = "red";
+            UI.msg.innerHTML = `Punti: ${Sys.score}<br>Livello: ${Sys.level}`;
+            UI.btn.textContent = "RIPROVA";
+            UI.overlay.style.display = 'flex';
+            Sys.level = 1; Sys.score = 0;
+        }
+
+        function winGame() {
+            Sys.state = 'over';
+            Sys.audio.pause();
+            Storage.save(Sys.score, 40);
+            UI.title.textContent = "VITTORIA!";
+            UI.msg.textContent = "Hai completato tutti i 40 livelli!";
+            UI.overlay.style.display = 'flex';
+        }
+
+        function togglePause() {
+            if(Sys.state === 'play') {
+                Sys.state = 'pause'; Sys.audio.pause();
+                UI.title.textContent = "PAUSA"; UI.msg.textContent = "";
+                UI.btn.textContent = "RIPRENDI"; UI.overlay.style.display = 'flex';
+            } else if(Sys.state === 'pause') {
+                Sys.state = 'play'; Sys.audio.play();
+                UI.overlay.style.display = 'none'; loop();
+            }
+        }
+
+        // --- UTILS & INPUT ---
+        function resize() {
+            const w = document.getElementById('game-wrap');
+            Sys.width = w.clientWidth; Sys.height = w.clientHeight;
+            Sys.canvas.width = Sys.width; Sys.canvas.height = Sys.height;
+        }
+        window.addEventListener('resize', resize);
+
+        const setInp = (k, v) => {
+            if(k.includes('Up')||k=='w') Input.y=-v;
+            if(k.includes('Down')||k=='s') Input.y=v;
+            if(k.includes('Left')||k=='a') Input.x=-v;
+            if(k.includes('Right')||k=='d') Input.x=v;
+        };
+        window.addEventListener('keydown', e => setInp(e.key, 1));
+        window.addEventListener('keyup', e => setInp(e.key, 0));
+
+        const touch = (id, dx, dy) => {
+            const el = document.getElementById(id);
+            const s = (e) => { e.preventDefault(); Input.x=dx; Input.y=dy; };
+            const e = (e) => { e.preventDefault(); Input.x=0; Input.y=0; };
+            el.addEventListener('touchstart', s, {passive:false});
+            el.addEventListener('touchend', e);
+            el.addEventListener('mousedown', s);
+            el.addEventListener('mouseup', e);
+        };
+        touch('b-up',0,-1); touch('b-down',0,1); touch('b-left',-1,0); touch('b-right',1,0);
+
+        document.getElementById('pause-btn').onclick = togglePause;
+        
+        UI.btn.onclick = () => {
+            if(Sys.state==='pause') togglePause();
+            else startGame(1);
+        };
+
+        // START
+        init();
+
+    </script>
+</body>
+</html>
