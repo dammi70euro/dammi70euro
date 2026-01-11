@@ -53,6 +53,32 @@ const characters = [];
 let selectedCharacter = null;
 let characterImages = {};
 
+// Sistema di salvataggio consensi liberatoria
+const ConsentStorage = {
+    hasConsent: function(character) {
+        const consents = JSON.parse(localStorage.getItem('hunter_consents') || '{}');
+        const charName = character.replace('.jpeg', '');
+        return consents[charName] === true;
+    },
+    saveConsent: function(character) {
+        const consents = JSON.parse(localStorage.getItem('hunter_consents') || '{}');
+        const charName = character.replace('.jpeg', '');
+        consents[charName] = true;
+        localStorage.setItem('hunter_consents', JSON.stringify(consents));
+    },
+    showConsentModal: function(character) {
+        const modal = document.getElementById('consent-modal');
+        const charName = character.replace('.jpeg', '');
+        const displayName = charName.charAt(0).toUpperCase() + charName.slice(1);
+        document.getElementById('consent-char-name').textContent = displayName;
+        modal.classList.remove('hidden');
+    },
+    hideConsentModal: function() {
+        const modal = document.getElementById('consent-modal');
+        modal.classList.add('hidden');
+    }
+};
+
 // Sistema di salvataggio punteggi
 const ScoreStorage = {
     saveScore: function(character, score) {
@@ -549,7 +575,12 @@ function loadCharacters() {
             document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
             item.classList.add('selected');
             selectedCharacter = name;
-            setTimeout(startGame, 200);
+            
+            if(!ConsentStorage.hasConsent(name)) {
+                ConsentStorage.showConsentModal(name);
+            } else {
+                setTimeout(startGame, 200);
+            }
         });
         
         item.addEventListener('touchstart', (e) => {
@@ -557,7 +588,12 @@ function loadCharacters() {
             document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
             item.classList.add('selected');
             selectedCharacter = name;
-            setTimeout(startGame, 200);
+            
+            if(!ConsentStorage.hasConsent(name)) {
+                ConsentStorage.showConsentModal(name);
+            } else {
+                setTimeout(startGame, 200);
+            }
         }, {passive: false});
         
         grid.appendChild(item);
@@ -756,6 +792,21 @@ Sys.canvas.addEventListener('touchstart', (e) => {
         returnToSelection();
     }
 }, {passive: false});
+
+// Gestione pulsanti liberatoria
+document.getElementById('consent-accept').addEventListener('click', () => {
+    if(selectedCharacter) {
+        ConsentStorage.saveConsent(selectedCharacter);
+        ConsentStorage.hideConsentModal();
+        setTimeout(startGame, 200);
+    }
+});
+
+document.getElementById('consent-cancel').addEventListener('click', () => {
+    ConsentStorage.hideConsentModal();
+    document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+    selectedCharacter = null;
+});
 
 resize();
 loadCharacters();
