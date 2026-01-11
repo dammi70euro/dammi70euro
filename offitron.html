@@ -10,7 +10,7 @@
             background-color: #000; color: #fff;
             font-family: 'Verdana', sans-serif;
             display: flex; flex-direction: column; align-items: center;
-            height: 100vh; overflow: hidden; touch-action: none; user-select: none;
+            min-height: 100vh; overflow-x: hidden; overflow-y: auto; touch-action: pan-y; user-select: none;
         }
         #controls {
             display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
@@ -38,7 +38,7 @@
             background: #000; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; box-sizing: border-box;
-            overflow: hidden;
+            overflow-y: auto; overflow-x: hidden;
         }
         #char-select.hidden { display: none; }
         #char-select-bg {
@@ -87,6 +87,41 @@
             #leaderboard {
                 position: relative; top: auto; right: auto;
                 width: 100%; max-width: 100%; margin-bottom: 20px;
+            }
+            #consent-modal {
+                align-items: flex-start; justify-content: flex-start;
+                padding: 10px; overflow-y: auto;
+            }
+            #consent-content {
+                padding: 15px; max-width: 100%; width: 100%;
+                margin: 0; border-radius: 8px;
+                max-height: calc(100vh - 20px);
+                overflow-y: auto;
+            }
+            #consent-title {
+                font-size: 18px; margin-bottom: 10px;
+            }
+            #consent-char-name {
+                font-size: 16px; margin-bottom: 10px;
+            }
+            #consent-text {
+                font-size: 14px; line-height: 1.5;
+                margin: 10px 0;
+            }
+            #consent-text ul {
+                margin: 10px 0 !important; padding-left: 20px !important;
+                font-size: 13px;
+            }
+            #consent-video {
+                margin: 10px 0; max-width: 100%;
+            }
+            #consent-buttons {
+                gap: 10px; margin-top: 10px; margin-bottom: 10px;
+                flex-wrap: wrap;
+            }
+            .consent-btn {
+                padding: 10px 20px; font-size: 14px;
+                flex: 1; min-width: 120px;
             }
         }
         #consent-modal {
