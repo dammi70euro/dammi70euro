@@ -72,6 +72,17 @@ const ConsentStorage = {
         const displayName = charName.charAt(0).toUpperCase() + charName.slice(1);
         document.getElementById('consent-char-name').textContent = displayName;
         modal.classList.remove('hidden');
+        
+        // Imposta il volume del video al massimo e fai partire la riproduzione
+        const video = document.getElementById('consent-video-player');
+        if(video) {
+            video.volume = 1.0;
+            video.muted = false;
+            video.play().catch(err => {
+                // Se l'autoplay fallisce (policy del browser), l'utente dovrà cliccare play
+                console.log('Autoplay non permesso dal browser');
+            });
+        }
     },
     hideConsentModal: function() {
         const modal = document.getElementById('consent-modal');
