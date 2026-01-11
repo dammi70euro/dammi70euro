@@ -48,6 +48,8 @@ const Sys = {
 };
 
 const Input = { x: 0, y: 0 };
+let gyroEnabled = false;
+let gyroCalibration = { beta: 0, gamma: 0 };
 
 const characters = [];
 let selectedCharacter = null;
@@ -170,7 +172,10 @@ class GameHunter extends GameBase {
     }
     spawnCoin() { this.coins.push({x:Math.random()*(Sys.width-40)+20, y:Math.random()*(Sys.height-40)+20, a:true}); }
     update() {
-        this.p.x += Input.x*4; this.p.y += Input.y*4;
+        // Usa giroscopio se attivo, altrimenti usa controlli normali
+        const inputX = gyroActive ? gyroInput.x : Input.x;
+        const inputY = gyroActive ? gyroInput.y : Input.y;
+        this.p.x += inputX*4; this.p.y += inputY*4;
         this.p.x = Math.max(10, Math.min(Sys.width-10, this.p.x));
         this.p.y = Math.max(10, Math.min(Sys.height-10, this.p.y));
 
@@ -560,6 +565,12 @@ function startGame() {
     initBackgroundParticles();
     playMusic(Sys.level);
     game = new GameHunter(Sys.level);
+    
+    // Richiedi permesso giroscopio su iOS quando il gioco parte
+    if(!gyroEnabled && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        requestGyroPermission();
+    }
+    
     loop();
 }
 
@@ -642,6 +653,87 @@ const touch = (id, dx, dy) => {
     el.addEventListener('mouseup', e);
 };
 touch('b-up',0,-1); touch('b-down',0,1); touch('b-left',-1,0); touch('b-right',1,0);
+
+// Supporto giroscopio per mobile (modalità alternativa)
+let gyroInput = { x: 0, y: 0 };
+let gyroActive = false;
+let gyroCalibrating = false;
+let gyroCalibrationCount = 0;
+const gyroCalibrationSamples = 30;
+
+function handleGyroOrientation(e) {
+    if(!gyroEnabled || Sys.state !== 'play') {
+        gyroActive = false;
+        gyroInput.x = 0;
+        gyroInput.y = 0;
+        return;
+    }
+    
+    if(gyroCalibrating) {
+        // Calibra prendendo la media delle prime misurazioni
+        gyroCalibrationCount++;
+        gyroCalibration.beta += e.beta || 0;
+        gyroCalibration.gamma += e.gamma || 0;
+        
+        if(gyroCalibrationCount >= gyroCalibrationSamples) {
+            gyroCalibration.beta /= gyroCalibrationSamples;
+            gyroCalibration.gamma /= gyroCalibrationSamples;
+            gyroCalibrating = false;
+        }
+        return;
+    }
+    
+    // Applica calibrazione
+    const beta = (e.beta || 0) - gyroCalibration.beta;
+    const gamma = (e.gamma || 0) - gyroCalibration.gamma;
+    
+    // Sensibilità (regolabile)
+    const sensitivity = 0.08;
+    
+    // Converti orientamento in input
+    // Gamma: inclinazione sinistra/destra -> movimento orizzontale
+    // Beta: inclinazione avanti/indietro -> movimento verticale
+    gyroInput.x = Math.max(-1, Math.min(1, gamma * sensitivity));
+    gyroInput.y = Math.max(-1, Math.min(1, beta * sensitivity));
+    
+    // Attiva giroscopio solo se c'è movimento significativo
+    gyroActive = Math.abs(gyroInput.x) > 0.01 || Math.abs(gyroInput.y) > 0.01;
+}
+
+function initGyroscope() {
+    // Rileva se siamo su mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if(!isMobile) return;
+    
+    // Verifica se l'API è disponibile
+    if(typeof DeviceOrientationEvent === 'undefined') return;
+    
+    // Browser che non richiedono permesso - attiva subito
+    if(typeof DeviceOrientationEvent.requestPermission !== 'function') {
+        gyroEnabled = true;
+        gyroCalibrating = true;
+        gyroCalibrationCount = 0;
+        gyroCalibration = { beta: 0, gamma: 0 };
+        window.addEventListener('deviceorientation', handleGyroOrientation);
+    }
+}
+
+// Funzione per richiedere permesso giroscopio (necessario su iOS 13+)
+function requestGyroPermission() {
+    if(typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(response => {
+                if(response === 'granted') {
+                    gyroEnabled = true;
+                    gyroCalibrating = true;
+                    gyroCalibrationCount = 0;
+                    gyroCalibration = { beta: 0, gamma: 0 };
+                    window.addEventListener('deviceorientation', handleGyroOrientation);
+                }
+            })
+            .catch(err => console.log('Giroscopio non disponibile:', err));
+    }
+}
 
 function initCharSelectBackground() {
     const canvas = document.getElementById('char-select-bg');
@@ -830,3 +922,4 @@ resize();
 loadCharacters();
 initCharSelectBackground();
 ScoreStorage.updateLeaderboard();
+initGyroscope();
