@@ -53,6 +53,47 @@ const characters = [];
 let selectedCharacter = null;
 let characterImages = {};
 
+// Sistema di salvataggio punteggi
+const ScoreStorage = {
+    saveScore: function(character, score) {
+        const scores = JSON.parse(localStorage.getItem('hunter_scores') || '{}');
+        const charName = character.replace('.jpeg', '');
+        if(!scores[charName] || score > scores[charName]) {
+            scores[charName] = score;
+            localStorage.setItem('hunter_scores', JSON.stringify(scores));
+        }
+        this.updateLeaderboard();
+    },
+    getScores: function() {
+        return JSON.parse(localStorage.getItem('hunter_scores') || '{}');
+    },
+    updateLeaderboard: function() {
+        const scores = this.getScores();
+        const leaderboardEl = document.getElementById('leaderboard-list');
+        if(!leaderboardEl) return;
+        
+        const names = ['ricka', 'franco', 'frizze', 'lastrue', 'lotti', 'mache', 'paolo'];
+        const entries = names
+            .filter(name => scores[name] !== undefined)
+            .map(name => ({ name, score: scores[name] }))
+            .sort((a, b) => b.score - a.score);
+        
+        if(entries.length === 0) {
+            leaderboardEl.innerHTML = '<div class="leaderboard-empty">Nessun punteggio ancora</div>';
+            return;
+        }
+        
+        leaderboardEl.innerHTML = entries.map((entry, index) => {
+            const displayName = entry.name.charAt(0).toUpperCase() + entry.name.slice(1);
+            return `<div class="leaderboard-item">
+                <span class="leaderboard-rank">#${index + 1}</span>
+                <span class="leaderboard-name">${displayName}</span>
+                <span class="leaderboard-score">${entry.score}</span>
+            </div>`;
+        }).join('');
+    }
+};
+
 class GameBase {
     constructor(lvl) {
         this.lvl = lvl;
@@ -307,6 +348,9 @@ function loop() {
             if(Sys.level > MAX_LEVEL) {
                 Sys.state = 'over';
                 Sys.audio.pause();
+                if(selectedCharacter) {
+                    ScoreStorage.saveScore(selectedCharacter, Sys.score);
+                }
                 Sys.ctx.fillStyle = 'rgba(0,0,0,0.8)';
                 Sys.ctx.fillRect(0, 0, Sys.width, Sys.height);
                 Sys.ctx.fillStyle = '#0f0';
@@ -314,6 +358,8 @@ function loop() {
                 Sys.ctx.textAlign = 'center';
                 Sys.ctx.fillText('VITTORIA!', Sys.width/2, Sys.height/2);
                 Sys.ctx.fillText('Punti: ' + Sys.score, Sys.width/2, Sys.height/2 + 30);
+                Sys.ctx.font = "16px monospace";
+                Sys.ctx.fillText('Clicca per tornare', Sys.width/2, Sys.height/2 + 60);
                 return;
             }
             playMusic(Sys.level);
@@ -322,6 +368,9 @@ function loop() {
         if(game.lost) {
             Sys.state = 'over';
             Sys.audio.pause();
+            if(selectedCharacter) {
+                ScoreStorage.saveScore(selectedCharacter, Sys.score);
+            }
             Sys.ctx.fillStyle = 'rgba(0,0,0,0.8)';
             Sys.ctx.fillRect(0, 0, Sys.width, Sys.height);
             Sys.ctx.fillStyle = '#fff';
@@ -329,6 +378,8 @@ function loop() {
             Sys.ctx.textAlign = 'center';
             Sys.ctx.fillText('GAME OVER', Sys.width/2, Sys.height/2);
             Sys.ctx.fillText('Punti: ' + Sys.score, Sys.width/2, Sys.height/2 + 30);
+            Sys.ctx.font = "16px monospace";
+            Sys.ctx.fillText('Clicca per tornare', Sys.width/2, Sys.height/2 + 60);
             return;
         }
     }
@@ -459,11 +510,22 @@ function drawBackgroundParticles(ctx) {
 function startGame() {
     document.getElementById('char-select').classList.add('hidden');
     Sys.state = 'play';
+    Sys.score = 0;
+    Sys.level = 1;
     resize();
     initBackgroundParticles();
     playMusic(Sys.level);
     game = new GameHunter(Sys.level);
     loop();
+}
+
+function returnToSelection() {
+    Sys.state = 'select';
+    Sys.score = 0;
+    Sys.level = 1;
+    game = null;
+    document.getElementById('char-select').classList.remove('hidden');
+    ScoreStorage.updateLeaderboard();
 }
 
 function loadCharacters() {
@@ -503,6 +565,8 @@ function loadCharacters() {
             loaded++;
         };
     });
+    
+    ScoreStorage.updateLeaderboard();
 }
 
 const setInp = (k, v) => {
@@ -679,6 +743,21 @@ function initCharSelectBackground() {
     animate();
 }
 
+// Click listener per tornare alla selezione dopo game over
+Sys.canvas.addEventListener('click', () => {
+    if(Sys.state === 'over') {
+        returnToSelection();
+    }
+});
+
+Sys.canvas.addEventListener('touchstart', (e) => {
+    if(Sys.state === 'over') {
+        e.preventDefault();
+        returnToSelection();
+    }
+}, {passive: false});
+
 resize();
 loadCharacters();
 initCharSelectBackground();
+ScoreStorage.updateLeaderboard();
