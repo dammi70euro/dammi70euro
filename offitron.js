@@ -87,6 +87,13 @@ const ConsentStorage = {
     hideConsentModal: function() {
         const modal = document.getElementById('consent-modal');
         modal.classList.add('hidden');
+        
+        // Ferma il video quando si chiude la modal
+        const video = document.getElementById('consent-video-player');
+        if(video) {
+            video.pause();
+            video.currentTime = 0; // Reset al'inizio
+        }
     }
 };
 
