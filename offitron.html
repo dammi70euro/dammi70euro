@@ -35,11 +35,20 @@
         #b-right { grid-column: 3; grid-row: 2; }
         #char-select {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 100;
+            background: #000; z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; box-sizing: border-box;
+            overflow: hidden;
         }
         #char-select.hidden { display: none; }
+        #char-select-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+        #char-select-content {
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
         #char-grid {
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 20px; max-width: 500px; width: 100%;
@@ -53,14 +62,84 @@
         .char-item:hover, .char-item.selected { border-color: #0f0; }
         .char-item img { width: 100%; height: 100%; object-fit: cover; }
         #char-title {
-            color: #0f0; font-size: 24px; margin-bottom: 30px; text-transform: uppercase;
+            color: #0f0; font-size: 28px; margin-bottom: 30px; text-transform: uppercase;
+            text-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0;
+            animation: titlePulse 0.8s ease-in-out infinite, titleGlow 1.5s ease-in-out infinite;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-1deg); }
+            50% { transform: scale(1.15) rotate(0deg); }
+            75% { transform: scale(1.1) rotate(1deg); }
+        }
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 20px #0f0, 0 0 40px #0f0, 0 0 60px #0f0; }
+            50% { text-shadow: 0 0 30px #0f0, 0 0 60px #0f0, 0 0 90px #0f0, 0 0 120px #0f0; }
+        }
+        .char-item {
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            animation: itemFloat 3s ease-in-out infinite;
+        }
+        .char-item:nth-child(1) { animation-delay: 0s; }
+        .char-item:nth-child(2) { animation-delay: 0.2s; }
+        .char-item:nth-child(3) { animation-delay: 0.4s; }
+        .char-item:nth-child(4) { animation-delay: 0.6s; }
+        .char-item:nth-child(5) { animation-delay: 0.8s; }
+        .char-item:nth-child(6) { animation-delay: 1s; }
+        .char-item:nth-child(7) { animation-delay: 1.2s; }
+        @keyframes itemFloat {
+            0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+            50% { transform: translateY(-10px) scale(1.05); box-shadow: 0 0 25px rgba(0,255,0,0.8); }
+        }
+        .char-item:hover {
+            transform: scale(1.2) rotate(5deg) !important;
+            box-shadow: 0 0 40px rgba(0,255,0,1), 0 0 80px rgba(0,255,0,0.8);
+            animation: hoverPulse 0.3s ease-in-out infinite;
+        }
+        @keyframes hoverPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+        .char-item.selected {
+            animation: selectedPulse 0.5s ease-in-out infinite, selectedRotate 2s linear infinite;
+            border-width: 4px;
+        }
+        @keyframes selectedPulse {
+            0%, 100% { 
+                box-shadow: 0 0 30px rgba(0,255,0,1), 0 0 60px rgba(0,255,0,0.8), 0 0 90px rgba(0,255,0,0.6);
+                transform: scale(1.1);
+            }
+            50% { 
+                box-shadow: 0 0 50px rgba(0,255,0,1), 0 0 100px rgba(0,255,0,1), 0 0 150px rgba(0,255,0,0.8);
+                transform: scale(1.15);
+            }
+        }
+        @keyframes selectedRotate {
+            0% { transform: rotate(0deg) scale(1.1); }
+            25% { transform: rotate(2deg) scale(1.12); }
+            50% { transform: rotate(0deg) scale(1.15); }
+            75% { transform: rotate(-2deg) scale(1.12); }
+            100% { transform: rotate(0deg) scale(1.1); }
+        }
+        #char-grid {
+            animation: gridPulse 2s ease-in-out infinite;
+        }
+        @keyframes gridPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
     </style>
 </head>
 <body>
     <div id="char-select">
-        <div id="char-title">Seleziona Personaggio</div>
-        <div id="char-grid"></div>
+        <canvas id="char-select-bg"></canvas>
+        <div id="char-select-content">
+            <div id="char-title">Seleziona Personaggio</div>
+            <div id="char-grid"></div>
+        </div>
     </div>
     <div id="game-wrap">
         <canvas id="gameCanvas"></canvas>
