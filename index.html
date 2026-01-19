@@ -163,6 +163,201 @@
     input:checked + .slider:before {
       transform: translateX(26px);
     }
+
+    /* Stili per le categorie */
+    .category-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      padding: 10px;
+    }
+
+    .category-tab {
+      padding: 12px 25px;
+      background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+      color: white;
+      border: 3px solid #007bff;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+
+    .category-tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .category-tab:hover::before {
+      left: 100%;
+    }
+
+    .category-tab:hover {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border-color: #0056b3;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+    }
+
+    .category-tab:active {
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    .category-tab.active {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border-color: #00ff00;
+      color: white;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 6px 25px rgba(0, 123, 255, 0.6);
+      animation: activePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(0, 123, 255, 0.5);
+      }
+    }
+
+    @keyframes activePulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 6px 25px rgba(0, 123, 255, 0.6);
+        border-color: #00ff00;
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(0, 255, 0, 1), 0 6px 30px rgba(0, 123, 255, 0.8);
+        border-color: #00cc00;
+      }
+    }
+
+    /* Effetto di separazione tra le categorie */
+    .category-tabs::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #007bff, transparent);
+      margin-bottom: 10px;
+    }
+
+    .category-content {
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      animation: fadeIn 0.5s ease-in;
+      opacity: 0;
+    }
+
+    .category-content.active {
+      display: flex;
+      opacity: 1;
+      animation: fadeInSlide 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInSlide {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* TikTok Embed Container */
+    .tiktok-embed-container {
+      width: 100%;
+      max-width: 605px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .tiktok-video-wrapper {
+      width: 100%;
+      max-width: 325px;
+      display: flex;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .tiktok-iframe {
+      width: 100%;
+      max-width: 325px;
+      height: 650px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      background: #000;
+    }
+
+    .tiktok-link {
+      width: auto;
+      max-width: 300px;
+    }
+
+    @media (max-width: 768px) {
+      .tiktok-video-wrapper {
+        max-width: 100%;
+      }
+
+      .tiktok-iframe {
+        max-width: 100%;
+        height: 600px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .category-tabs {
+        gap: 8px;
+        margin-bottom: 20px;
+        padding: 8px;
+      }
+
+      .category-tab {
+        padding: 10px 18px;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+      }
+
+      .category-tab:hover {
+        transform: translateY(-2px) scale(1.03);
+      }
+    }
   </style>
 </head>
 <body>
@@ -186,22 +381,60 @@
       <ul id="mp3-list"></ul>
     </div>
     <div class="bottom-section">
+      <div class="category-tabs">
+        <button class="category-tab active" data-category="gaming">🎮 Gaming</button>
+        <button class="category-tab" data-category="tools">🛠️ Tools</button>
+        <button class="category-tab" data-category="instruments">🎹 Instruments</button>
+        <button class="category-tab" data-category="casse">📦 Casse</button>
+      </div>
+      
       <div class="buttons-container">
-	    <a class="big-button" data-page="offitron.html">🎯 OFFITRON 🎯</a>
-	    <a class="big-button" data-page="Insiemetron.html">👨‍👩‍👧‍👦 Insiemetron 👨‍👨‍👧</a>
-		<a class="big-button" data-page="Insiemetron2.html">👨‍👩‍👧‍👦 Insiemetron2 👨‍👨‍👧</a>
-        <a class="big-button" data-page="seconda.html">😞 Non lo fa 😞</a>
-        <a class="big-button" data-page="synt.html">🎹 SOGNOTRON 🎹</a>
-        <a class="big-button" data-page="pippatron.html">PIPPATRON ❄️</a>
-        <a class="big-button" data-page="giangiotron.html">GIANGIOTRON️🤷‍♂️</a>
-        <a class="big-button" data-page="sonatron.html">🎶SONATRON😢</a>
-        <a class="big-button" data-page="Kaustitron.html">Kaustitron 💊</a>
-        <a class="big-button" data-page="drammatron.html">🥁💊 Drammatron</a>
-        <a class="big-button" data-page="fototron.html">📸 Fototron 📷</a>
-         <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
-         <a class="big-button" data-page="strudetron.html">🎹 STRUDETRON 🎹</a>
-         <a class="big-button" href="https://francocerone.github.io/fratemix/" target="_blank">🎛️🎧 FRATEMIX 🎧🎛️</a>
-       </div>
+        <!-- Gaming Category -->
+        <div class="category-content active" id="category-gaming">
+          <a class="big-button" data-page="offitron.html">🎯 OFFITRON 🎯</a>
+          <a class="big-button" data-page="Insiemetron.html">👨‍👩‍👧‍👦 Insiemetron 👨‍👨‍👧</a>
+          <a class="big-button" data-page="Insiemetron2.html">👨‍👩‍👧‍👦 Insiemetron2 👨‍👨‍👧</a>
+        </div>
+        
+        <!-- Tools Category -->
+        <div class="category-content" id="category-tools">
+          <a class="big-button" data-page="fototron.html">📸 Fototron 📷</a>
+          <a class="big-button" data-page="Kaustitron.html">Kaustitron 💊</a>
+          <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
+        </div>
+        
+        <!-- Instruments Category -->
+        <div class="category-content" id="category-instruments">
+          <a class="big-button" data-page="synt.html">🎹 SOGNOTRON 🎹</a>
+          <a class="big-button" data-page="sonatron.html">🎶SONATRON😢</a>
+          <a class="big-button" data-page="drammatron.html">🥁💊 Drammatron</a>
+          <a class="big-button" data-page="strudetron.html">🎹 STRUDETRON 🎹</a>
+          <a class="big-button" href="https://francocerone.github.io/fratemix/" target="_blank">🎛️🎧 FRATEMIX 🎧🎛️</a>
+          <a class="big-button" data-page="seconda.html">😞 Non lo fa 😞</a>
+          <a class="big-button" data-page="pippatron.html">PIPPATRON ❄️</a>
+          <a class="big-button" data-page="giangiotron.html">GIANGIOTRON️🤷‍♂️</a>
+        </div>
+        
+        <!-- Casse Category -->
+        <div class="category-content" id="category-casse">
+          <div class="tiktok-embed-container">
+            <div class="tiktok-video-wrapper">
+              <iframe 
+                src="https://www.tiktok.com/embed/v2/ZNRBYj5sB" 
+                width="325" 
+                height="650" 
+                frameborder="0" 
+                scrolling="no" 
+                allowtransparency="true" 
+                allow="encrypted-media; autoplay; clipboard-write;"
+                class="tiktok-iframe">
+              </iframe>
+            </div>
+            <!-- Link diretto come fallback/alternativa -->
+            <a class="big-button tiktok-link" href="https://vm.tiktok.com/ZNRBYj5sB/" target="_blank">📱 Apri video TikTok</a>
+          </div>
+        </div>
+      </div>
       
       <!-- Container per l'iframe -->
       <div id="iframe-container" class="iframe-container">
@@ -225,6 +458,24 @@
 
   <script src="script.js"></script>
   <script>
+    // Gestione delle categorie
+    const categoryTabs = document.querySelectorAll('.category-tab');
+    const categoryContents = document.querySelectorAll('.category-content');
+    
+    categoryTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const category = this.getAttribute('data-category');
+        
+        // Rimuovi active da tutti i tab e contenuti
+        categoryTabs.forEach(t => t.classList.remove('active'));
+        categoryContents.forEach(c => c.classList.remove('active'));
+        
+        // Aggiungi active al tab e contenuto selezionati
+        this.classList.add('active');
+        document.getElementById('category-' + category).classList.add('active');
+      });
+    });
+
     // Interruttore modalità
     const modeToggle = document.getElementById('mode-toggle');
     
