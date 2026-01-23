@@ -263,10 +263,149 @@
         #char-grid {
             animation: gridPulse 2s ease-in-out infinite;
         }
-        @keyframes gridPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
+    @keyframes gridPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    /* Stili per bottone aggiungi utente */
+    .char-item.add-user {
+        border: 3px dashed #0f0;
+        background: rgba(0, 255, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #0f0;
+        text-align: center;
+        padding: 10px;
+    }
+    .char-item.add-user:hover {
+        background: rgba(0, 255, 0, 0.2);
+        border-color: #0a0;
+    }
+    .add-user-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    /* Stili per modal caricamento foto */
+    #photo-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 300;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    #photo-modal.hidden {
+        display: none;
+    }
+    #photo-content {
+        background: #111;
+        border: 2px solid #0f0;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 0 40px rgba(0,255,0,0.5);
+    }
+    #photo-title {
+        color: #0f0;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        text-shadow: 0 0 20px #0f0;
+    }
+    #photo-preview {
+        width: 100%;
+        max-width: 300px;
+        height: 300px;
+        border: 2px solid #0f0;
+        border-radius: 8px;
+        margin: 20px auto;
+        object-fit: cover;
+        display: none;
+    }
+    #photo-preview.show {
+        display: block;
+    }
+    #photo-video {
+        width: 100%;
+        max-width: 300px;
+        height: 300px;
+        border: 2px solid #0f0;
+        border-radius: 8px;
+        margin: 20px auto;
+        object-fit: cover;
+        display: none;
+        transform: scaleX(-1);
+    }
+    #photo-video.show {
+        display: block;
+    }
+    .photo-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    .photo-btn {
+        padding: 12px 30px;
+        border: 2px solid;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        background: transparent;
+        color: #0f0;
+        border-color: #0f0;
+    }
+    .photo-btn:hover {
+        background: #0f0;
+        color: #000;
+        box-shadow: 0 0 20px rgba(0,255,0,0.8);
+    }
+    .photo-btn.secondary {
+        color: #666;
+        border-color: #666;
+    }
+    .photo-btn.secondary:hover {
+        border-color: #999;
+        color: #999;
+    }
+    #file-input {
+        display: none;
+    }
+    .photo-input-label {
+        display: inline-block;
+        padding: 12px 30px;
+        border: 2px solid #0f0;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        color: #0f0;
+        background: transparent;
+    }
+    .photo-input-label:hover {
+        background: #0f0;
+        color: #000;
+        box-shadow: 0 0 20px rgba(0,255,0,0.8);
+    }
     </style>
 </head>
 <body>
@@ -291,6 +430,20 @@
             <div id="consent-buttons">
                 <button class="consent-btn" id="consent-accept">Accetto</button>
                 <button class="consent-btn" id="consent-cancel">Annulla</button>
+            </div>
+        </div>
+    </div>
+    <div id="photo-modal" class="hidden">
+        <div id="photo-content">
+            <div id="photo-title">Skuccati anche tu!</div>
+            <img id="photo-preview" alt="Anteprima foto">
+            <video id="photo-video" autoplay playsinline></video>
+            <div class="photo-buttons">
+                <label for="file-input" class="photo-input-label">📁 Carica Foto</label>
+                <input type="file" id="file-input" accept="image/*">
+                <button class="photo-btn" id="camera-btn">📷 Scatta Foto</button>
+                <button class="photo-btn" id="use-photo-btn" style="display: none;">✅ Usa Questa Foto</button>
+                <button class="photo-btn secondary" id="photo-cancel">Annulla</button>
             </div>
         </div>
     </div>

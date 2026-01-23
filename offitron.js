@@ -54,6 +54,9 @@ let gyroCalibration = { beta: 0, gamma: 0 };
 const characters = [];
 let selectedCharacter = null;
 let characterImages = {};
+const CUSTOM_USER_ID = 'user_custom';
+let customUserImage = null;
+let stream = null;
 
 // Sistema di salvataggio consensi liberatoria
 const ConsentStorage = {
@@ -71,7 +74,12 @@ const ConsentStorage = {
     showConsentModal: function(character) {
         const modal = document.getElementById('consent-modal');
         const charName = character.replace('.jpeg', '');
-        const displayName = charName.charAt(0).toUpperCase() + charName.slice(1);
+        let displayName;
+        if(charName === CUSTOM_USER_ID) {
+            displayName = 'Tu';
+        } else {
+            displayName = charName.charAt(0).toUpperCase() + charName.slice(1);
+        }
         document.getElementById('consent-char-name').textContent = displayName;
         modal.classList.remove('hidden');
         
@@ -119,6 +127,10 @@ const ScoreStorage = {
         if(!leaderboardEl) return;
         
         const names = ['ricka', 'franco', 'frizze', 'lastrue', 'lotti', 'mache', 'paolo'];
+        // Aggiungi utente personalizzato se esiste
+        if(customUserImage) {
+            names.push(CUSTOM_USER_ID);
+        }
         const entries = names
             .filter(name => scores[name] !== undefined)
             .map(name => ({ name, score: scores[name] }))
@@ -130,7 +142,12 @@ const ScoreStorage = {
         }
         
         leaderboardEl.innerHTML = entries.map((entry, index) => {
-            const displayName = entry.name.charAt(0).toUpperCase() + entry.name.slice(1);
+            let displayName;
+            if(entry.name === CUSTOM_USER_ID) {
+                displayName = 'Tu';
+            } else {
+                displayName = entry.name.charAt(0).toUpperCase() + entry.name.slice(1);
+            }
             return `<div class="leaderboard-item">
                 <span class="leaderboard-rank">#${index + 1}</span>
                 <span class="leaderboard-name">${displayName}</span>
@@ -588,6 +605,50 @@ function loadCharacters() {
     const grid = document.getElementById('char-grid');
     let loaded = 0;
     
+    // Carica utente personalizzato se esiste
+    const savedCustomImage = localStorage.getItem('hunter_custom_user_image');
+    if(savedCustomImage) {
+        customUserImage = savedCustomImage;
+        const customName = CUSTOM_USER_ID + '.jpeg';
+        characters.push(customName);
+        const img = new Image();
+        img.src = savedCustomImage;
+        characterImages[customName] = img;
+        
+        const item = document.createElement('div');
+        item.className = 'char-item';
+        const itemImg = document.createElement('img');
+        itemImg.src = savedCustomImage;
+        item.appendChild(itemImg);
+        
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedCharacter = customName;
+            
+            if(!ConsentStorage.hasConsent(customName)) {
+                ConsentStorage.showConsentModal(customName);
+            } else {
+                setTimeout(startGame, 200);
+            }
+        });
+        
+        item.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedCharacter = customName;
+            
+            if(!ConsentStorage.hasConsent(customName)) {
+                ConsentStorage.showConsentModal(customName);
+            } else {
+                setTimeout(startGame, 200);
+            }
+        }, {passive: false});
+        
+        grid.appendChild(item);
+    }
+    
     names.forEach(name => {
         characters.push(name);
         const img = new Image();
@@ -630,6 +691,22 @@ function loadCharacters() {
             loaded++;
         };
     });
+    
+    // Aggiungi bottone "Skuccati anche tu"
+    const addUserItem = document.createElement('div');
+    addUserItem.className = 'char-item add-user';
+    addUserItem.innerHTML = '<div class="add-user-icon">➕</div><div>Skuccati<br>anche tu</div>';
+    
+    addUserItem.addEventListener('click', () => {
+        showPhotoModal();
+    });
+    
+    addUserItem.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        showPhotoModal();
+    }, {passive: false});
+    
+    grid.appendChild(addUserItem);
     
     ScoreStorage.updateLeaderboard();
 }
@@ -916,6 +993,177 @@ document.getElementById('consent-cancel').addEventListener('click', () => {
     ConsentStorage.hideConsentModal();
     document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
     selectedCharacter = null;
+});
+
+// Gestione modal caricamento foto
+function showPhotoModal() {
+    const modal = document.getElementById('photo-modal');
+    modal.classList.remove('hidden');
+    document.getElementById('photo-preview').classList.remove('show');
+    document.getElementById('photo-video').classList.remove('show');
+    document.getElementById('use-photo-btn').style.display = 'none';
+}
+
+function hidePhotoModal() {
+    const modal = document.getElementById('photo-modal');
+    modal.classList.add('hidden');
+    stopCamera();
+    document.getElementById('photo-preview').classList.remove('show');
+    document.getElementById('photo-video').classList.remove('show');
+    document.getElementById('use-photo-btn').style.display = 'none';
+    document.getElementById('file-input').value = '';
+}
+
+function stopCamera() {
+    if(stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    const video = document.getElementById('photo-video');
+    if(video) {
+        video.srcObject = null;
+    }
+}
+
+// Gestione caricamento file
+document.getElementById('file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const preview = document.getElementById('photo-preview');
+            preview.src = event.target.result;
+            preview.classList.add('show');
+            document.getElementById('photo-video').classList.remove('show');
+            document.getElementById('use-photo-btn').style.display = 'block';
+            stopCamera();
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Gestione fotocamera
+document.getElementById('camera-btn').addEventListener('click', async () => {
+    try {
+        stopCamera();
+        const video = document.getElementById('photo-video');
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 640 }
+            } 
+        });
+        video.srcObject = stream;
+        video.classList.add('show');
+        document.getElementById('photo-preview').classList.remove('show');
+        document.getElementById('use-photo-btn').style.display = 'block';
+    } catch(err) {
+        alert('Impossibile accedere alla fotocamera. Assicurati di aver concesso i permessi.');
+        console.error('Errore accesso fotocamera:', err);
+    }
+});
+
+// Usa foto selezionata/scattata
+document.getElementById('use-photo-btn').addEventListener('click', () => {
+    const preview = document.getElementById('photo-preview');
+    const video = document.getElementById('photo-video');
+    let imageData = null;
+    
+    if(preview.classList.contains('show') && preview.src) {
+        // Foto caricata
+        imageData = preview.src;
+    } else if(video.classList.contains('show') && stream) {
+        // Foto scattata dalla fotocamera
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        imageData = canvas.toDataURL('image/jpeg', 0.9);
+    }
+    
+    if(imageData) {
+        // Salva immagine
+        localStorage.setItem('hunter_custom_user_image', imageData);
+        customUserImage = imageData;
+        
+        // Aggiungi personaggio
+        const customName = CUSTOM_USER_ID + '.jpeg';
+        if(!characters.includes(customName)) {
+            characters.push(customName);
+            const img = new Image();
+            img.src = imageData;
+            characterImages[customName] = img;
+            
+            // Aggiungi alla griglia
+            const grid = document.getElementById('char-grid');
+            const existingCustom = grid.querySelector(`[data-custom-user="true"]`);
+            if(existingCustom) {
+                existingCustom.remove();
+            }
+            
+            const item = document.createElement('div');
+            item.className = 'char-item';
+            item.setAttribute('data-custom-user', 'true');
+            const itemImg = document.createElement('img');
+            itemImg.src = imageData;
+            item.appendChild(itemImg);
+            
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedCharacter = customName;
+                
+                if(!ConsentStorage.hasConsent(customName)) {
+                    ConsentStorage.showConsentModal(customName);
+                } else {
+                    setTimeout(startGame, 200);
+                }
+            });
+            
+            item.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedCharacter = customName;
+                
+                if(!ConsentStorage.hasConsent(customName)) {
+                    ConsentStorage.showConsentModal(customName);
+                } else {
+                    setTimeout(startGame, 200);
+                }
+            }, {passive: false});
+            
+            // Inserisci prima del bottone "Skuccati anche tu"
+            const addUserBtn = grid.querySelector('.add-user');
+            if(addUserBtn) {
+                grid.insertBefore(item, addUserBtn);
+            } else {
+                grid.appendChild(item);
+            }
+        } else {
+            // Aggiorna immagine esistente
+            const existingItem = grid.querySelector(`[data-custom-user="true"]`);
+            if(existingItem) {
+                const existingImg = existingItem.querySelector('img');
+                if(existingImg) {
+                    existingImg.src = imageData;
+                }
+            }
+            const img = new Image();
+            img.src = imageData;
+            characterImages[customName] = img;
+        }
+        
+        hidePhotoModal();
+        ScoreStorage.updateLeaderboard();
+    }
+});
+
+// Annulla caricamento foto
+document.getElementById('photo-cancel').addEventListener('click', () => {
+    hidePhotoModal();
 });
 
 resize();
