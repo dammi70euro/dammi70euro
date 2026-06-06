@@ -361,6 +361,18 @@
   </style>
 </head>
 <body>
+  <aside class="promo-banner" id="promo-banner" role="complementary" aria-label="Novità: nuovo sito Dammi 7o te">
+    <a href="dammi70-te/" class="promo-banner__link">
+      <span class="promo-banner__badge">✨ Novità</span>
+      <span class="promo-banner__content">
+        <strong class="promo-banner__title">Dammi 7o te!</strong>
+        <span class="promo-banner__desc">Il nuovo hub è online: player potenziato, visualizer audio e look industrial. Vieni a scoprirlo!</span>
+      </span>
+      <span class="promo-banner__cta">Scopri ora →</span>
+    </a>
+    <button type="button" class="promo-banner__close" id="promo-close" aria-label="Chiudi banner">×</button>
+  </aside>
+
   <h1>Dammi 70 euro 💰</h1>
   
   <!-- Box di ricerca per PC -->
@@ -461,6 +473,25 @@
 
   <script src="script.js"></script>
   <script>
+    // Banner promozionale nuovo sito
+    (function () {
+      const banner = document.getElementById('promo-banner');
+      const closeBtn = document.getElementById('promo-close');
+      if (!banner || !closeBtn) return;
+
+      if (localStorage.getItem('promoBannerDismissed') === 'true') {
+        banner.remove();
+        return;
+      }
+
+      closeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        banner.remove();
+        localStorage.setItem('promoBannerDismissed', 'true');
+      });
+    })();
+
     // Gestione delle categorie
     const categoryTabs = document.querySelectorAll('.category-tab');
     const categoryContents = document.querySelectorAll('.category-content');
