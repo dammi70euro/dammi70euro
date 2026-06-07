@@ -1171,3 +1171,7 @@ loadCharacters();
 initCharSelectBackground();
 ScoreStorage.updateLeaderboard();
 initGyroscope();
+
+initGyroscope();
+
+initGyroscope();
