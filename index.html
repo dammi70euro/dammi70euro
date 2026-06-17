@@ -361,17 +361,31 @@
   </style>
 </head>
 <body>
-  <aside class="promo-banner" id="promo-banner" role="complementary" aria-label="Novità: nuovo sito Dammi 7o te">
-    <a href="https://dammi70euro.github.io/dammi70te/" class="promo-banner__link">
-      <span class="promo-banner__badge">✨ Novità</span>
-      <span class="promo-banner__content">
-        <strong class="promo-banner__title">Dammi 70 te!</strong>
-        <span class="promo-banner__desc">Il nuovo hub è online: player potenziato, visualizer audio e look industrial. Vieni a scoprirlo!</span>
-      </span>
-      <span class="promo-banner__cta">Scopri ora →</span>
-    </a>
-    <button type="button" class="promo-banner__close" id="promo-close" aria-label="Chiudi banner">×</button>
-  </aside>
+  <div class="promo-banners">
+    <aside class="promo-banner promo-banner--ctrlwin" id="ctrlwin-promo-banner" role="complementary" aria-label="Novità: ControlAltSkuck per Windows">
+      <a href="https://franco-power-trading.github.io/ctrlwinskuck/" class="promo-banner__link" target="_blank" rel="noopener noreferrer">
+        <span class="promo-banner__badge promo-banner__badge--ctrlwin">🆕 Nuova app</span>
+        <span class="promo-banner__content">
+          <strong class="promo-banner__title">ControlAltSkuck</strong>
+          <span class="promo-banner__desc">Cambia desktop virtuali con <strong>Ctrl + Win + click</strong> — destro avanti, sinistro indietro. Gratis, portable, zero installazione.</span>
+        </span>
+        <span class="promo-banner__cta promo-banner__cta--ctrlwin">⬇️ Scarica gratis</span>
+      </a>
+      <button type="button" class="promo-banner__close" id="ctrlwin-promo-close" aria-label="Chiudi banner ControlAltSkuck">×</button>
+    </aside>
+
+    <aside class="promo-banner" id="promo-banner" role="complementary" aria-label="Novità: nuovo sito Dammi 7o te">
+      <a href="https://dammi70euro.github.io/dammi70te/" class="promo-banner__link">
+        <span class="promo-banner__badge">✨ Novità</span>
+        <span class="promo-banner__content">
+          <strong class="promo-banner__title">Dammi 70 te!</strong>
+          <span class="promo-banner__desc">Il nuovo hub è online: player potenziato, visualizer audio e look industrial. Vieni a scoprirlo!</span>
+        </span>
+        <span class="promo-banner__cta">Scopri ora →</span>
+      </a>
+      <button type="button" class="promo-banner__close" id="promo-close" aria-label="Chiudi banner">×</button>
+    </aside>
+  </div>
 
   <h1>Dammi 70 euro 💰</h1>
   
@@ -411,6 +425,7 @@
         
         <!-- Tools Category -->
         <div class="category-content" id="category-tools">
+          <a class="big-button" href="https://franco-power-trading.github.io/ctrlwinskuck/" target="_blank" rel="noopener noreferrer">⌨️🖱️ ControlAltSkuck — Cambia schermo con Ctrl+Win+Click</a>
           <a class="big-button" data-page="fototron.html">📸 Fototron 📷</a>
           <a class="big-button" data-page="Kaustitron.html">Kaustitron 💊</a>
           <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
@@ -473,23 +488,28 @@
 
   <script src="script.js"></script>
   <script>
-    // Banner promozionale nuovo sito
+    // Banner promozionali (dismiss indipendente)
     (function () {
-      const banner = document.getElementById('promo-banner');
-      const closeBtn = document.getElementById('promo-close');
-      if (!banner || !closeBtn) return;
+      function setupPromoBanner(bannerId, closeId, storageKey) {
+        const banner = document.getElementById(bannerId);
+        const closeBtn = document.getElementById(closeId);
+        if (!banner || !closeBtn) return;
 
-      if (localStorage.getItem('promoBannerDismissed') === 'true') {
-        banner.remove();
-        return;
+        if (localStorage.getItem(storageKey) === 'true') {
+          banner.remove();
+          return;
+        }
+
+        closeBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          banner.remove();
+          localStorage.setItem(storageKey, 'true');
+        });
       }
 
-      closeBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        banner.remove();
-        localStorage.setItem('promoBannerDismissed', 'true');
-      });
+      setupPromoBanner('ctrlwin-promo-banner', 'ctrlwin-promo-close', 'ctrlwinPromoBannerDismissed');
+      setupPromoBanner('promo-banner', 'promo-close', 'promoBannerDismissed');
     })();
 
     // Gestione delle categorie

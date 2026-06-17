@@ -31,14 +31,21 @@ h1 {
 }
 
 /* ============================== */
-/* BANNER PROMO NUOVO SITO       */
+/* BANNER PROMO                  */
 /* ============================== */
+
+.promo-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 20;
+  margin: -8px 0 12px;
+}
 
 .promo-banner {
   position: relative;
-  z-index: 20;
   flex-shrink: 0;
-  margin: -8px 0 12px;
   border-radius: 14px;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(10, 11, 13, 0.95), rgba(28, 33, 41, 0.92));
@@ -168,6 +175,79 @@ h1 {
   }
   50% {
     background-position: -200% 0;
+  }
+}
+
+/* Variante ControlAltSkuck — più visibile, tema Windows */
+.promo-banner--ctrlwin {
+  background: linear-gradient(135deg, rgba(0, 32, 80, 0.97), rgba(45, 20, 90, 0.94));
+  border: 1px solid rgba(96, 205, 255, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(0, 120, 215, 0.15) inset,
+    0 14px 44px rgba(0, 0, 0, 0.5),
+    0 0 56px rgba(0, 120, 215, 0.22);
+  animation: promo-enter 0.6s ease-out, ctrlwin-glow 3s ease-in-out infinite;
+}
+
+.promo-banner--ctrlwin::before {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(96, 205, 255, 0.18) 50%,
+    transparent 70%
+  );
+}
+
+.promo-banner__badge--ctrlwin {
+  color: #fff;
+  background: linear-gradient(135deg, #0078d4, #5c2d91);
+  box-shadow: 0 0 20px rgba(0, 120, 215, 0.55);
+  animation: ctrlwin-badge-pulse 2.5s ease-in-out infinite;
+}
+
+.promo-banner--ctrlwin .promo-banner__title {
+  color: #60cdff;
+  text-shadow: 0 0 24px rgba(96, 205, 255, 0.45);
+  font-size: clamp(1.2rem, 3.2vw, 1.55rem);
+}
+
+.promo-banner--ctrlwin .promo-banner__desc strong {
+  color: #b4e0ff;
+}
+
+.promo-banner__cta--ctrlwin {
+  color: #fff;
+  background: linear-gradient(135deg, #0078d4, #00bcf2);
+  box-shadow: 0 4px 20px rgba(0, 120, 212, 0.45);
+  font-size: 0.9rem;
+  padding: 0.65rem 1.15rem;
+}
+
+.promo-banner--ctrlwin .promo-banner__link:hover .promo-banner__cta--ctrlwin {
+  box-shadow: 0 6px 28px rgba(0, 188, 242, 0.55);
+}
+
+@keyframes ctrlwin-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 120, 215, 0.15) inset,
+      0 14px 44px rgba(0, 0, 0, 0.5),
+      0 0 48px rgba(0, 120, 215, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(96, 205, 255, 0.25) inset,
+      0 14px 44px rgba(0, 0, 0, 0.5),
+      0 0 64px rgba(96, 205, 255, 0.32);
+  }
+}
+
+@keyframes ctrlwin-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
   }
 }
 
