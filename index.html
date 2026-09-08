@@ -362,6 +362,18 @@
 </head>
 <body>
   <div class="promo-banners">
+    <aside class="promo-banner promo-banner--skukkatrontv" id="skukkatrontv-promo-banner" role="complementary" aria-label="Novità: SkukkatronTV">
+      <a href="https://dammi70euro.github.io/SkukkatronTV/" class="promo-banner__link" target="_blank" rel="noopener noreferrer">
+        <span class="promo-banner__badge promo-banner__badge--skukkatrontv">📺 In onda</span>
+        <span class="promo-banner__content">
+          <strong class="promo-banner__title">SkukkatronTV</strong>
+          <span class="promo-banner__desc">Il nuovo player Free-TV Italia è online: canali DTT, telecomando LCN e guida EPG. Guarda la TV dal browser!</span>
+        </span>
+        <span class="promo-banner__cta promo-banner__cta--skukkatrontv">Guarda ora →</span>
+      </a>
+      <button type="button" class="promo-banner__close" id="skukkatrontv-promo-close" aria-label="Chiudi banner SkukkatronTV">×</button>
+    </aside>
+
     <aside class="promo-banner promo-banner--ctrlwin" id="ctrlwin-promo-banner" role="complementary" aria-label="Novità: ControlAltSkuck per Windows">
       <a href="https://franco-power-trading.github.io/ctrlwinskuck/" class="promo-banner__link" target="_blank" rel="noopener noreferrer">
         <span class="promo-banner__badge promo-banner__badge--ctrlwin">🆕 Nuova app</span>
@@ -410,6 +422,7 @@
       <div class="category-tabs">
         <button class="category-tab active" data-category="gaming">🎮 Gaming</button>
         <button class="category-tab" data-category="tools">🛠️ Tools</button>
+        <button class="category-tab" data-category="tv">📺 TV</button>
         <button class="category-tab" data-category="instruments">🎹 Instruments</button>
         <button class="category-tab" data-category="casse">📦 Casse</button>
       </div>
@@ -431,6 +444,11 @@
           <a class="big-button" data-page="Campionatron.html">Campionatron🔝🎛️🧱 Kampionatron 🔝🎛️🧱</a>
           <a class="big-button" href="https://francocerone.github.io/fratemix/" target="_blank">🎛️🎧 FRATEMIX 🎧🎛️</a>
           <a class="big-button" href="https://francocerone.github.io/youtube_daw/" target="_blank">🎬🎵 YOUTUBE DAW 🎵🎬</a>
+        </div>
+
+        <!-- TV Category -->
+        <div class="category-content" id="category-tv">
+          <a class="big-button" href="https://dammi70euro.github.io/SkukkatronTV/" target="_blank" rel="noopener noreferrer">📺 SkukkatronTV — Free-TV Italia Player</a>
         </div>
         
         <!-- Instruments Category -->
@@ -508,6 +526,7 @@
         });
       }
 
+      setupPromoBanner('skukkatrontv-promo-banner', 'skukkatrontv-promo-close', 'skukkatrontvPromoBannerDismissed');
       setupPromoBanner('ctrlwin-promo-banner', 'ctrlwin-promo-close', 'ctrlwinPromoBannerDismissed');
       setupPromoBanner('promo-banner', 'promo-close', 'promoBannerDismissed');
     })();
