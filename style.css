@@ -311,6 +311,118 @@ h1 {
   }
 }
 
+/* Variante Caustic Web — TAMARRA: bordo arcobaleno, neon, badge che trema */
+.promo-banner--caustic {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(135deg, rgba(20, 0, 40, 0.97), rgba(0, 25, 30, 0.95)) padding-box,
+    linear-gradient(90deg, #ff00cc, #ffea00, #00ff6a, #00e5ff, #8a2be2, #ff00cc) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: promo-enter 0.6s ease-out, caustic-border 3s linear infinite, caustic-pump 0.47s ease-in-out infinite;
+  box-shadow:
+    0 0 24px rgba(255, 0, 204, 0.55),
+    0 0 60px rgba(0, 229, 255, 0.35),
+    0 14px 44px rgba(0, 0, 0, 0.55);
+}
+
+.promo-banner--caustic::before {
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 234, 0, 0.06) 0 12px,
+    transparent 12px 24px
+  );
+  background-size: 200% 200%;
+  animation: caustic-stripes 1.2s linear infinite;
+}
+
+.promo-banner__badge--caustic {
+  color: #000;
+  background: #ffea00;
+  border: 2px solid #ff00cc;
+  font-size: 0.75rem;
+  box-shadow: 0 0 18px #ffea00, 0 0 36px rgba(255, 0, 204, 0.7);
+  animation: caustic-shake 0.35s ease-in-out infinite, caustic-blink 0.9s steps(2, start) infinite;
+}
+
+.promo-banner--caustic .promo-banner__title {
+  font-size: clamp(1.35rem, 3.8vw, 1.9rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, #ff00cc, #ffea00, #00ff6a, #00e5ff, #ff00cc);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 204, 0.8));
+  animation: caustic-border 2s linear infinite;
+}
+
+.promo-banner--caustic .promo-banner__desc {
+  color: #e8fff6;
+}
+
+.promo-banner--caustic .promo-banner__desc strong {
+  color: #00ff6a;
+  text-shadow: 0 0 10px rgba(0, 255, 106, 0.8);
+}
+
+.promo-banner__cta--caustic {
+  color: #000;
+  font-weight: 900;
+  font-size: 0.95rem;
+  padding: 0.7rem 1.2rem;
+  background: linear-gradient(135deg, #00ff6a, #ffea00);
+  box-shadow: 0 0 20px rgba(0, 255, 106, 0.7), 0 0 40px rgba(255, 234, 0, 0.4);
+  animation: caustic-cta 0.94s ease-in-out infinite;
+}
+
+.promo-banner--caustic .promo-banner__link:hover .promo-banner__cta--caustic {
+  transform: scale(1.12) rotate(-2deg);
+  box-shadow: 0 0 30px #00ff6a, 0 0 60px #ffea00;
+}
+
+@keyframes caustic-border {
+  0% { background-position: 0 0, 0% 50%; }
+  100% { background-position: 0 0, 300% 50%; }
+}
+
+@keyframes caustic-pump {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.012); }
+}
+
+@keyframes caustic-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 34px 0; }
+}
+
+@keyframes caustic-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg) scale(1.08); }
+  75% { transform: rotate(6deg) scale(1.08); }
+}
+
+@keyframes caustic-blink {
+  to { background: #ff00cc; color: #fff; }
+}
+
+@keyframes caustic-cta {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-banner--caustic,
+  .promo-banner--caustic::before,
+  .promo-banner__badge--caustic,
+  .promo-banner--caustic .promo-banner__title,
+  .promo-banner__cta--caustic {
+    animation: none;
+  }
+}
+
 /* ============================== */
 /* CONTAINER DIVISO 50/50        */
 /* ============================== */
