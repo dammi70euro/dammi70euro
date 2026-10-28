@@ -362,6 +362,18 @@
 </head>
 <body>
   <div class="promo-banners">
+    <aside class="promo-banner promo-banner--burronitron" id="burronitron-promo-banner" role="complementary" aria-label="Novità: Burronitron, il flipper">
+      <a href="https://dammi70euro.github.io/burronitron/" class="promo-banner__link" target="_blank" rel="noopener noreferrer">
+        <span class="promo-banner__badge promo-banner__badge--burronitron">🕹️ Tilt! 🕹️</span>
+        <span class="promo-banner__content">
+          <strong class="promo-banner__title">Burronitron</strong>
+          <span class="promo-banner__desc">🎱 È arrivato il <strong>flipper</strong> di Dammi 70 euro: pallina, bumper e punti a pioggia. Tira la molla e fai <strong>MULTIBALL</strong>!</span>
+        </span>
+        <span class="promo-banner__cta promo-banner__cta--burronitron">🔥 Gioca ora 🔥</span>
+      </a>
+      <button type="button" class="promo-banner__close" id="burronitron-promo-close" aria-label="Chiudi banner Burronitron">×</button>
+    </aside>
+
     <aside class="promo-banner promo-banner--caustic" id="caustic-promo-banner" role="complementary" aria-label="Novità: Caustic Web">
       <a href="caustic-web/index.html" class="promo-banner__link" target="_blank" rel="noopener">
         <span class="promo-banner__badge promo-banner__badge--caustic">🔥 Nuovo 🔥</span>
@@ -442,6 +454,7 @@
       <div class="buttons-container">
         <!-- Gaming Category -->
         <div class="category-content active" id="category-gaming">
+          <a class="big-button" href="https://dammi70euro.github.io/burronitron/" target="_blank" rel="noopener noreferrer">🎱 BURRONITRON — Il flipper 🕹️</a>
           <a class="big-button" data-page="offitron.html">🎯 OFFITRON 🎯</a>
           <a class="big-button" data-page="cacciatron.html">🔫 Cacciatron – Spara ai cattivi</a>
           <a class="big-button" data-page="Insiemetron.html">👨‍👩‍👧‍👦 Insiemetron 👨‍👨‍👧</a>
@@ -540,6 +553,7 @@
         });
       }
 
+      setupPromoBanner('burronitron-promo-banner', 'burronitron-promo-close', 'burronitronPromoBannerDismissed');
       setupPromoBanner('caustic-promo-banner', 'caustic-promo-close', 'causticPromoBannerDismissed');
       setupPromoBanner('skukkatrontv-promo-banner', 'skukkatrontv-promo-close', 'skukkatrontvPromoBannerDismissed');
       setupPromoBanner('ctrlwin-promo-banner', 'ctrlwin-promo-close', 'ctrlwinPromoBannerDismissed');

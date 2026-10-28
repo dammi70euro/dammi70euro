@@ -423,6 +423,107 @@ h1 {
   }
 }
 
+/* Variante Burronitron — flipper: luci da sala giochi, pallina che rimbalza */
+.promo-banner--burronitron {
+  border: 3px solid #ff6d00;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(255, 109, 0, 0.35), transparent 45%),
+    radial-gradient(circle at 85% 50%, rgba(213, 0, 249, 0.35), transparent 45%),
+    linear-gradient(135deg, rgba(25, 0, 45, 0.97), rgba(45, 10, 0, 0.95));
+  animation: promo-enter 0.6s ease-out, burronitron-lights 0.8s steps(2, start) infinite;
+}
+
+.promo-banner--burronitron::before {
+  inset: auto;
+  top: 8px;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #c0c0c0 45%, #555 100%);
+  background-size: 100% 100%;
+  z-index: 1;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  animation: burronitron-ball 2.4s linear infinite;
+}
+
+.promo-banner__badge--burronitron {
+  color: #fff;
+  background: linear-gradient(135deg, #ff1744, #ff6d00);
+  border: 2px solid #ffea00;
+  font-size: 0.75rem;
+  box-shadow: 0 0 18px rgba(255, 23, 68, 0.8);
+  animation: caustic-shake 0.3s ease-in-out infinite;
+}
+
+.promo-banner--burronitron .promo-banner__title {
+  font-size: clamp(1.35rem, 3.8vw, 1.9rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffea00;
+  text-shadow: 0 0 6px #ff6d00, 0 0 16px #ff1744, 0 0 30px #d500f9;
+  animation: burronitron-flicker 1.6s linear infinite;
+}
+
+.promo-banner--burronitron .promo-banner__desc {
+  color: #fff3e0;
+}
+
+.promo-banner--burronitron .promo-banner__desc strong {
+  color: #ff9e40;
+  text-shadow: 0 0 10px rgba(255, 109, 0, 0.9);
+}
+
+.promo-banner__cta--burronitron {
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.95rem;
+  padding: 0.7rem 1.2rem;
+  background: linear-gradient(135deg, #d500f9, #ff1744);
+  box-shadow: 0 0 20px rgba(213, 0, 249, 0.7), 0 0 40px rgba(255, 23, 68, 0.4);
+  animation: caustic-cta 0.6s ease-in-out infinite;
+}
+
+.promo-banner--burronitron .promo-banner__link:hover .promo-banner__cta--burronitron {
+  transform: scale(1.12) rotate(2deg);
+  box-shadow: 0 0 30px #d500f9, 0 0 60px #ff1744;
+}
+
+@keyframes burronitron-lights {
+  0% {
+    border-color: #ff6d00;
+    box-shadow: 0 0 24px rgba(255, 109, 0, 0.6), 0 0 60px rgba(255, 23, 68, 0.3), 0 14px 44px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    border-color: #d500f9;
+    box-shadow: 0 0 24px rgba(213, 0, 249, 0.6), 0 0 60px rgba(255, 234, 0, 0.3), 0 14px 44px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@keyframes burronitron-ball {
+  0%   { left: 0;                  top: 6px; }
+  25%  { left: 25%;                top: calc(100% - 20px); }
+  50%  { left: 50%;                top: 6px; }
+  75%  { left: 75%;                top: calc(100% - 20px); }
+  100% { left: calc(100% - 14px);  top: 6px; }
+}
+
+@keyframes burronitron-flicker {
+  0%, 18%, 22%, 62%, 64%, 100% { opacity: 1; }
+  20%, 63% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-banner--burronitron,
+  .promo-banner--burronitron::before,
+  .promo-banner__badge--burronitron,
+  .promo-banner--burronitron .promo-banner__title,
+  .promo-banner__cta--burronitron {
+    animation: none;
+  }
+}
+
 /* ============================== */
 /* CONTAINER DIVISO 50/50        */
 /* ============================== */
